@@ -914,6 +914,17 @@ function resumenHTML() {
   return h;
 }
 
+function barras(filas, titulo) {
+  const max = Math.max(1, ...filas.map(f => f.l.length));
+  return `<h2>${titulo}</h2><div class="barras">` + filas.map(f => {
+    const v = f.l.filter(c => c.tipo === 'venta').length, c = f.l.length - v;
+    return `<div class="barra ${f.actual ? 'actual' : ''}"><span>${f.et}</span>
+      <div class="pista" role="img" aria-label="${f.et}: ${v} ventas y ${c} cobros">
+        <div class="v" style="width:${v / max * 100}%"></div><div class="c" style="width:${c / max * 100}%"></div></div>
+      <span>${f.l.length}</span></div>`;
+  }).join('') + `</div><div class="leyenda"><span><i style="background:var(--venta)"></i>Ventas</span><span><i style="background:var(--cobro)"></i>Cobros</span></div>`;
+}
+
 /* ---------- calendario estilo iPhone: Mes, Compacto, Día, Lista ---------- */
 let calModo = 'chips', foco = '', detalleId = null;
 try { calModo = localStorage.getItem('agenda_calmodo') || 'puntos'; } catch (e) {}
