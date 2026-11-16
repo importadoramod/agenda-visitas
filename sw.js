@@ -1,6 +1,6 @@
 // Agenda de Visitas — trabajo sin internet.
 // La app se abre aunque no haya señal; las citas viajan al servidor cuando vuelve la conexión.
-const VERSION = 'agenda-v6';
+const VERSION = 'agenda-v7';
 const ARCHIVOS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './logo-mod.png'];
 
 self.addEventListener('install', e => {
