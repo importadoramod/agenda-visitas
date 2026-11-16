@@ -150,7 +150,7 @@ input,textarea{width:100%;font-size:19px;padding:14px;border:2px solid var(--lin
 #btnMic.on{background:var(--ink);color:var(--bg);animation:latido 1.2s ease-in-out infinite}
 @keyframes latido{50%{transform:scale(1.03)}}
 @media (prefers-reduced-motion:reduce){#btnMic.on{animation:none}}
-.cfg-logo{align-self:center;margin-top:20px;height:116px;width:auto}
+.cfg-logo{align-self:center;margin-top:20px;width:120px;height:120px;border-radius:26px}
 #formConfig h3{text-align:center;font-size:24px;margin:6px 0 0}
 #formConfig .ayuda{text-align:center}
 .err{color:var(--danger);font-weight:700;min-height:1.4em;margin-top:8px}
@@ -283,7 +283,7 @@ h1,h2,h3,.saludo,.hora,.cn,.dato b,.monto,.ic-tit h2{font-weight:500;letter-spac
 header{border-bottom:1px solid var(--line);padding-block:18px 14px}
 h1{font-size:20px;font-weight:600}
 #hoyTxt{color:var(--muted)}
-.logo{width:auto;height:56px;border-radius:0;box-shadow:none;border:0;background:transparent;object-fit:contain}
+.logo{width:56px;height:56px;border-radius:14px;box-shadow:none;border:1px solid var(--line);background:#0c0c0d;object-fit:cover}
 #btnLetra{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:500;min-height:47px;min-width:58px}
 #btnLetra[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 nav{background:var(--soft);border-radius:16px;padding:4px;gap:4px;margin-top:16px}
@@ -351,7 +351,7 @@ label{font-weight:500;color:var(--muted);font-size:15px}
 
 <header>
   <div class="top">
-    <div class="marca"><img class="logo" src="logo-mod.png" alt="MOD" width="68" height="56"><div><h1>Agenda de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
+    <div class="marca"><img class="logo" src="icon-192.png?v=2" alt="MOD" width="56" height="56"><div><h1>Agenda de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
     <button id="btnLetra" aria-pressed="false" aria-label="Letra más grande">A<span>A</span></button>
   </div>
   <nav>
@@ -471,7 +471,7 @@ label{font-weight:500;color:var(--muted);font-size:15px}
 </div>
 <div id="config" class="hoja" hidden>
   <form id="formConfig" class="hojaIn" novalidate>
-    <img src="logo-mod.png" alt="MOD" width="140" height="116" class="cfg-logo">
+    <img src="icon-512.png?v=2" alt="MOD" width="120" height="120" class="cfg-logo">
     <h3>Conectar la agenda</h3>
     <p class="ayuda" id="cfgMsg">Copie el enlace de instalación que le enviaron y péguelo aquí.</p>
     <button type="button" id="cfgPegar" class="aj-btn">📋 Pegar el enlace</button>
