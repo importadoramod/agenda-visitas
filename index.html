@@ -1085,107 +1085,246 @@ $('#form').addEventListener('submit', async e => {
 });
 
 /* ---------- dictado por voz: el micrófono escribe y la agenda reparte los datos ---------- */
-const NUM = { un: 1, uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11, doce: 12,
-  trece: 13, catorce: 14, quince: 15, veinte: 20, veinticinco: 25, treinta: 30, cuarenta: 40, cincuenta: 50, sesenta: 60, setenta: 70,
-  ochenta: 80, noventa: 90, cien: 100, ciento: 100, doscientos: 200, trescientos: 300, cuatrocientos: 400, quinientos: 500, mil: 1000 };
+/* Intérprete del dictado: trabaja palabra por palabra, entiende minúsculas, números en letras y frases sueltas. */
+const NUMS = { cero: 0, un: 1, uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10,
+  once: 11, doce: 12, trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18, diecinueve: 19, veinte: 20,
+  veintiun: 21, veintiuno: 21, veintiuna: 21, veintidos: 22, veintitres: 23, veinticuatro: 24, veinticinco: 25, veintiseis: 26,
+  veintisiete: 27, veintiocho: 28, veintinueve: 29, treinta: 30, cuarenta: 40, cincuenta: 50, sesenta: 60, setenta: 70, ochenta: 80,
+  noventa: 90, cien: 100, ciento: 100, doscientos: 200, doscientas: 200, trescientos: 300, trescientas: 300, cuatrocientos: 400,
+  quinientos: 500, quinientas: 500, seiscientos: 600, setecientos: 700, ochocientos: 800, novecientos: 900 };
 const DIAS_N = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
 const MESES_N = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const CIUDADES = ['Quito', 'Guayaquil', 'Cuenca', 'Ambato', 'Riobamba', 'Latacunga', 'Ibarra', 'Otavalo', 'Tulcán', 'Loja', 'Machala', 'Manta',
   'Portoviejo', 'Santo Domingo', 'Esmeraldas', 'Babahoyo', 'Quevedo', 'Milagro', 'Durán', 'Daule', 'Salinas', 'La Libertad', 'Sangolquí',
-  'Carapungo', 'Calderón', 'Cumbayá', 'Tumbaco', 'Conocoto', 'Pomasqui', 'Salcedo', 'Pujilí', 'Puyo', 'Tena', 'Azogues', 'Guaranda',
-  'Cayambe', 'Machachi', 'Baños', 'Pelileo', 'Lago Agrio', 'Coca', 'Macas', 'Zamora', 'Chone', 'Jipijapa', 'Atuntaqui'];
+  'Carapungo', 'Calderón', 'Cumbayá', 'Tumbaco', 'Conocoto', 'Pomasqui', 'San Antonio de Pichincha', 'Salcedo', 'Pujilí', 'Puyo', 'Tena',
+  'Azogues', 'Guaranda', 'Cayambe', 'Machachi', 'Baños', 'Pelileo', 'Lago Agrio', 'Coca', 'Macas', 'Zamora', 'Chone', 'Jipijapa',
+  'Atuntaqui', 'Tabacundo', 'Píllaro', 'Saquisilí', 'Alangasí', 'Amaguaña', 'Puembo', 'Pifo', 'Tababela', 'Nayón', 'Guamaní',
+  'Chillogallo', 'Quitumbe', 'Cotocollao', 'El Inca', 'La Carolina', 'Valle de los Chillos', 'Mitad del Mundo', 'Sangolqui'];
 const sinTildes = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
 const escRe = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const numero = w => /^\d+$/.test(w) ? Number(w) : NUM[w];
+const PEQ = new Set(['de', 'del', 'la', 'las', 'los', 'el', 'y']);
+const capital = t => t.split(' ').map((w, i) => (i && PEQ.has(w.toLowerCase())) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+const RE_COBRO = /^(cobr|cobranza|pago|pagar|abono|abonar|cuota|deuda|letra|saldo)/;
+const RE_VENTA = /^(vend|venta|llevar|llevarle|lleva|entreg|ofrec|mostrar|pedido|catalogo|muestra)/;
+const TITULOS = new Set(['senor', 'senora', 'senorita', 'sr', 'sra', 'srta', 'don', 'dona', 'ingeniero', 'ingeniera', 'ing', 'doctor', 'doctora',
+  'dr', 'dra', 'licenciado', 'licenciada', 'lcdo', 'lcda', 'profesor', 'profesora', 'optica', 'almacen', 'tienda', 'local', 'negocio',
+  'farmacia', 'consultorio', 'comercial', 'distribuidora', 'clinica', 'centro']);
+const ACTIVADORES = new Set(['a', 'al', 'con', 'cliente', 'donde', 'para', 'visitar', 'visita', 'ver', 'atender']);
+const PARADAS = new Set(['en', 'el', 'para', 'que', 'a', 'al', 'las', 'hoy', 'manana', 'pasado', 'dolares', 'dolar', 'usd', 'por', 'cobrar',
+  'cobro', 'vender', 'venta', 'llevar', 'llevarle', 'entregar', 'mostrar', 'ofrecer', 'mercaderia', 'productos', 'producto', 'con',
+  'este', 'esta', 'proximo', 'proxima', 'siguiente', 'dia', 'de', 'y', 'tiene', 'tengo', 'hay', 'debe', 'nota', 'recordar', 'referencia',
+  'telefono', 'celular', 'numero', 'horas', 'hora', 'am', 'pm', 'mediodia', 'semana', 'mes', 'se', 'le', 'lo', 'su', 'sus', 'un', 'una',
+  ...DIAS_N, ...MESES_N]);
+
+function aNumero(tokens, i) {
+  // Lee un número en cifras ("50", "50,5", "$50") o en letras ("ciento veinte y cinco", "mil quinientos")
+  let w = tokens[i];
+  if (w === undefined) return null;
+  if (/^\$?\d+(?:[.,]\d{1,2})?$/.test(w)) return { n: Number(w.replace('$', '').replace(',', '.')), fin: i + 1 };
+  let total = 0, actual = 0, j = i, leidos = 0;
+  while (j < tokens.length) {
+    w = tokens[j];
+    if (w === 'y' && leidos && tokens[j + 1] in NUMS) { j++; continue; }
+    if (w === 'mil' ) { total += (actual || 1) * 1000; actual = 0; leidos++; j++; continue; }
+    if (w in NUMS) { actual += NUMS[w]; leidos++; j++; continue; }
+    break;
+  }
+  return leidos ? { n: total + actual, fin: j } : null;
+}
 
 function interpretarLocal(texto) {
-  const txt = ' ' + texto.replace(/\s+/g, ' ').trim() + ' ';
-  const b = sinTildes(txt.toLowerCase());
-  const d = { fecha: hoyISO(), hora: '', cliente: '', ciudad: '', tipo: '', mercaderia: '', monto: 0, nota: '' };
   const h0 = hoyISO(), hoy = desdeISO(h0);
-  let m;
+  const d = { fecha: h0, hora: '', cliente: '', ciudad: '', tipo: '', mercaderia: '', monto: 0, nota: '' };
+  const limpio = texto.replace(/\b([ap])\s?\.\s?m\s?\.?/gi, ' $1m ').replace(/([,;!?¿¡()])/g, ' $1 ').replace(/\.(\s|$)/g, ' . ')
+    .replace(/(\d)\s*(?:am|pm)\b/gi, (m) => m.replace(/(\d)\s*/, '$1 ')).replace(/\s+/g, ' ').trim();
+  const orig = limpio.split(' ');
+  const t = orig.map(w => sinTildes(w.toLowerCase()));
+  const usado = new Array(t.length).fill(false);
+  const marcar = (a, b) => { for (let k = a; k < b; k++) usado[k] = true; };
+  const libre = (a, b) => { for (let k = a; k < b; k++) if (usado[k]) return false; return true; };
+  const esPunt = w => /^[,;.!?¿¡()]$/.test(w);
 
-  // Tipo de visita
-  if (/cobr|deuda|abono|cuota|pagar|pago/.test(b)) d.tipo = 'cobro';
-  else if (/vend|venta|llevar|lleva |entreg|mercader|ofrec|mostrar|pedido/.test(b)) d.tipo = 'venta';
+  // 1) Tipo
+  let iCobro = t.findIndex(w => RE_COBRO.test(w)), iVenta = t.findIndex(w => RE_VENTA.test(w));
+  if (iCobro >= 0 && (iVenta < 0 || iCobro <= iVenta)) d.tipo = 'cobro';
+  else if (iVenta >= 0) d.tipo = 'venta';
 
-  // Monto
-  m = b.match(/\$\s*(\d+(?:[.,]\d{1,2})?)/) || b.match(/(\d+(?:[.,]\d{1,2})?)\s*(?:dolares|dolar|usd)\b/);
-  if (m) d.monto = Number(m[1].replace(',', '.'));
-  else if ((m = b.match(/\b([a-z]+)(?:\s+y\s+([a-z]+))?\s+dolares\b/)) && NUM[m[1]]) d.monto = NUM[m[1]] + (NUM[m[2]] || 0);
-  if (d.monto && !d.tipo) d.tipo = 'cobro';
-
-  // Fecha
-  const bf = b.replace(/\b(de|en|por) la manana\b/g, ' ');
-  if (/\bpasado manana\b/.test(bf)) d.fecha = sumarDias(h0, 2);
-  else if (/\bmanana\b/.test(bf)) d.fecha = sumarDias(h0, 1);
-  else if (/\bhoy\b/.test(bf)) d.fecha = h0;
-  else {
-    const k = DIAS_N.findIndex(x => new RegExp('\\b' + x + '\\b').test(bf));
+  // 2) Fecha
+  for (let i = 0; i < t.length; i++) {
+    const w = t[i];
+    if (w === 'pasado' && t[i + 1] === 'manana') { d.fecha = sumarDias(h0, 2); marcar(i, i + 2); break; }
+    if (w === 'manana' && !['la', 'esta'].includes(t[i - 1])) { d.fecha = sumarDias(h0, 1); marcar(i, i + 1); break; }
+    if (w === 'hoy') { d.fecha = h0; marcar(i, i + 1); break; }
+    if (w === 'dentro' && t[i + 1] === 'de') { const n = aNumero(t, i + 2); if (n && /^dias?$/.test(t[n.fin] || '')) { d.fecha = sumarDias(h0, n.n); marcar(i, n.fin + 1); break; } }
+    const k = DIAS_N.indexOf(w);
     if (k >= 0) {
       let dd = (k - hoy.getDay() + 7) % 7;
-      if (dd === 0 && !/\beste\b/.test(bf)) dd = 7;
-      if (/\b(proximo|siguiente|que viene)\b/.test(bf) && dd < 7 && /semana/.test(bf)) dd += 7;
-      d.fecha = sumarDias(h0, dd);
+      const previo = t[i - 1] === 'el' ? t[i - 2] : t[i - 1];
+      if (dd === 0 && !['este', 'hoy'].includes(previo)) dd = 7;
+      if (['proximo', 'siguiente'].includes(previo) && dd < 2) dd += 7;
+      let f = sumarDias(h0, dd), fin = i + 1;
+      const n = aNumero(t, i + 1); // "el lunes 23"
+      if (n && n.n >= 1 && n.n <= 31 && !['las', 'la'].includes(t[i])) {
+        let c = new Date(hoy.getFullYear(), hoy.getMonth(), n.n); if (c < hoy) c = new Date(hoy.getFullYear(), hoy.getMonth() + 1, n.n);
+        f = isoDe(c); fin = n.fin;
+      }
+      let desde = i; while (desde > 0 && ['el', 'este', 'esta', 'proximo', 'siguiente', 'para'].includes(t[desde - 1])) desde--;
+      d.fecha = f; marcar(desde, fin); break;
     }
-    m = bf.match(/\b(?:el|dia|para el)\s+(\d{1,2}|[a-z]+)(?:\s+de\s+([a-z]+))?\b/);
-    const dia = m && numero(m[1]);
-    if (dia && dia >= 1 && dia <= 31) {
-      let mes = m[2] ? MESES_N.indexOf(m[2] === 'setiembre' ? 'septiembre' : m[2]) : -1;
-      let y = hoy.getFullYear(), mm = mes >= 0 ? mes : hoy.getMonth();
-      let f = new Date(y, mm, dia);
-      if (f < hoy) f = mes >= 0 ? new Date(y + 1, mm, dia) : new Date(y, mm + 1, dia);
-      d.fecha = isoDe(f);
+    if ((w === 'el' || w === 'dia') && t[i + 1] !== 'las') {
+      const ini = t[i + 1] === 'dia' ? i + 2 : i + 1, n = aNumero(t, ini);
+      if (n && n.n >= 1 && n.n <= 31 && !/^(dolar|horas?)/.test(t[n.fin] || '')) {
+        let mes = -1, fin = n.fin;
+        if (t[fin] === 'de' && (MESES_N.includes(t[fin + 1]) || t[fin + 1] === 'setiembre')) { mes = MESES_N.indexOf(t[fin + 1] === 'setiembre' ? 'septiembre' : t[fin + 1]); fin += 2; }
+        else if (t[fin] === 'de' && t[fin + 1] === 'este' && t[fin + 2] === 'mes') fin += 3;
+        let c = new Date(hoy.getFullYear(), mes >= 0 ? mes : hoy.getMonth(), n.n);
+        if (c < hoy) c = mes >= 0 ? new Date(hoy.getFullYear() + 1, mes, n.n) : new Date(hoy.getFullYear(), hoy.getMonth() + 1, n.n);
+        d.fecha = isoDe(c); marcar(i, fin); break;
+      }
     }
-  }
-
-  // Hora
-  const bh = b.replace(/\b(de|en|por) la manana\b/g, ' am ').replace(/\b(de|en|por) la (tarde|noche)\b/g, ' pm ')
-    .replace(/\ba(?:\s+las)?\s+mediodia\b|\bal mediodia\b/, ' a las 12 ');
-  m = bh.match(/\b(?:a las|a la|las|la una)\s*(\d{1,2}|[a-z]+)?(?:\s*[:h.]\s*(\d{2}))?(?:\s+y\s+(media|cuarto|\d{1,2}|[a-z]+))?(?:\s+(am|pm|a\.?\s?m\.?|p\.?\s?m\.?))?/);
-  if (m) {
-    let hh = m[0].startsWith('la una') && !m[1] ? 1 : numero(m[1] || '');
-    if (hh >= 0 && hh <= 23) {
-      let mi = m[2] ? Number(m[2]) : m[3] === 'media' ? 30 : m[3] === 'cuarto' ? 15 : m[3] ? (numero(m[3]) || 0) : 0;
-      const resto = bh.slice(bh.indexOf(m[0]) + m[0].length, bh.indexOf(m[0]) + m[0].length + 14);
-      const pm = /p\.?\s?m/.test(m[4] || '') || /^\s*(pm|p\.?\s?m)/.test(resto);
-      const am = /a\.?\s?m/.test(m[4] || '') || /^\s*(am|a\.?\s?m)/.test(resto);
-      if (pm && hh < 12) hh += 12;
-      else if (!am && !pm && hh >= 1 && hh <= 6) hh += 12; // "a las tres" en visitas de trabajo es por la tarde
-      if (am && hh === 12) hh = 0;
-      if (mi >= 0 && mi < 60) d.hora = pad(hh) + ':' + pad(mi);
+    const n = aNumero(t, i); // "23 de noviembre"
+    if (n && t[n.fin] === 'de' && MESES_N.includes(t[n.fin + 1]) && n.n >= 1 && n.n <= 31) {
+      const mes = MESES_N.indexOf(t[n.fin + 1]); let c = new Date(hoy.getFullYear(), mes, n.n);
+      if (c < hoy) c = new Date(hoy.getFullYear() + 1, mes, n.n);
+      d.fecha = isoDe(c); marcar(i, n.fin + 2); break;
     }
   }
 
-  // Ciudad: primero las ya usadas, luego las conocidas
+  // 3) Hora
+  const tarde = t.some((w, i) => (w === 'tarde' || w === 'noche') && ['la', 'esta'].includes(t[i - 1])) || t.includes('pm');
+  const manana = t.some((w, i) => w === 'manana' && ['la', 'esta'].includes(t[i - 1])) || t.includes('am');
+  for (let i = 0; i < t.length; i++) {
+    let ini = -1;
+    if ((t[i] === 'las' || t[i] === 'la') && (t[i + 1] === 'una' || aNumero(t, i + 1))) ini = i + 1;
+    else if (/^\d{1,2}:\d{2}$/.test(t[i])) ini = i;
+    else if (t[i] === 'mediodia') { d.hora = '12:00'; marcar(i, i + 1); break; }
+    else if (aNumero(t, i) && ['am', 'pm', 'horas', 'hrs'].includes(t[aNumero(t, i).fin])) ini = i;
+    if (ini < 0) continue;
+    let hh, mm = 0, fin;
+    if (/^\d{1,2}:\d{2}$/.test(t[ini])) { [hh, mm] = t[ini].split(':').map(Number); fin = ini + 1; }
+    else if (/^\d{1,2}$/.test(t[ini])) { hh = Number(t[ini]); fin = ini + 1; }
+    else if (t[ini] in NUMS) { hh = NUMS[t[ini]]; fin = ini + 1; }
+    else continue;
+    if (t[fin] === 'y' || t[fin] === 'con') {
+      if (t[fin + 1] === 'media') { mm = 30; fin += 2; }
+      else if (t[fin + 1] === 'cuarto') { mm = 15; fin += 2; }
+      else { const m = aNumero(t, fin + 1); if (m && m.n < 60) { mm = m.n; fin = m.fin; } }
+    } else if (t[fin] === 'menos' && t[fin + 1] === 'cuarto') { hh -= 1; mm = 45; fin += 2; }
+    else { const m = aNumero(t, fin); if (m && m.n >= 10 && m.n < 60 && !/^dolar/.test(t[m.fin] || '')) { mm = m.n; fin = m.fin; } } // "nueve treinta"
+    if (!(hh >= 0 && hh <= 23)) continue;
+    const suf = t[fin];
+    const pm = suf === 'pm' || (t[fin + 1] && ['tarde', 'noche'].includes(t[fin + 2]) && t[fin] === 'de') || tarde;
+    const am = suf === 'am' || (t[fin] === 'de' && t[fin + 1] === 'la' && t[fin + 2] === 'manana') || manana;
+    if (pm && hh < 12) hh += 12;
+    else if (!am && !pm && hh >= 1 && hh <= 6) hh += 12; // "a las tres" en visitas de trabajo es por la tarde
+    if (am && hh === 12) hh = 0;
+    d.hora = pad(hh) + ':' + pad(mm);
+    marcar(i, fin + (['am', 'pm', 'horas', 'hrs'].includes(suf) ? 1 : 0));
+    break;
+  }
+  t.forEach((w, i) => { if (['manana', 'tarde', 'noche'].includes(w) && ['la', 'esta'].includes(t[i - 1])) marcar(i - 1, i + 1); });
+
+  // 4) Monto
+  for (let i = 0; i < t.length && !d.monto; i++) {
+    if (usado[i]) continue;
+    const n = aNumero(t, i);
+    if (!n) continue;
+    let fin = n.fin, centavos = 0;
+    const conSigno = orig[i].startsWith('$');
+    const dolares = /^(dolares|dolar|usd)$/.test(t[fin] || '');
+    const trasCobro = i > 0 && (RE_COBRO.test(t[i - 1]) || (t[i - 1] === 'de' && RE_COBRO.test(t[i - 2] || '')));
+    if (!(conSigno || dolares || trasCobro)) continue;
+    if (dolares) fin++;
+    if (t[fin] === 'con') { const c = aNumero(t, fin + 1); if (c && c.n < 100) { centavos = c.n; fin = c.fin + (/^centavos?$/.test(t[c.fin] || '') ? 1 : 0); } }
+    d.monto = Math.round((n.n + centavos / 100) * 100) / 100; marcar(i, fin);
+  }
+  if (d.monto && !d.tipo) d.tipo = 'cobro';
+
+  // 5) Teléfono
+  const tel = limpio.replace(/[^\d\s]/g, ' ').match(/\b0\d(?:\s?\d){7,8}\b/);
+  if (tel) {
+    const num = tel[0].replace(/\s/g, ''); d.nota = 'Tel: ' + num;
+    t.forEach((w, i) => { if (/^\d+$/.test(w) && num.includes(w) && w.length >= 2) marcar(i, i + 1); if (/^(telefono|celular|numero)$/.test(w)) marcar(i, i + 1); });
+  }
+
+  // 6) Ciudad: las ya usadas y las conocidas; si no, la palabra después de "en"
+  const plano = ' ' + t.map((w, i) => usado[i] ? '_' : w).join(' ') + ' ';
   const conocidas = [...new Set([...citas.map(c => c.ciudad).filter(Boolean), ...CIUDADES])].sort((x, y) => y.length - x.length);
-  for (const c of conocidas) if (new RegExp('\\b' + escRe(sinTildes(c.toLowerCase())) + '\\b').test(b)) { d.ciudad = c; break; }
-  if (!d.ciudad && (m = txt.match(/\ben\s+([A-ZÁÉÍÓÚÑ][\wáéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][\wáéíóúñ]+)?)/))) d.ciudad = m[1];
+  for (const c of conocidas) {
+    const cc = sinTildes(c.toLowerCase());
+    const pos = plano.indexOf(' ' + cc + ' ');
+    if (pos >= 0) {
+      const ini = plano.slice(0, pos).trim().split(' ').filter(Boolean).length, n = cc.split(' ').length;
+      d.ciudad = c.replace(/Sangolqui$/, 'Sangolquí'); marcar(ini, ini + n); if (t[ini - 1] === 'en') marcar(ini - 1, ini); break;
+    }
+  }
+  if (!d.ciudad) {
+    for (let i = 0; i < t.length - 1; i++) {
+      if (t[i] !== 'en' || usado[i + 1] || PARADAS.has(t[i + 1]) || esPunt(t[i + 1]) || /^\d/.test(t[i + 1])) continue;
+      const pal = [orig[i + 1]]; let fin = i + 2;
+      if (t[fin] && !usado[fin] && !PARADAS.has(t[fin]) && !esPunt(t[fin]) && /^[A-ZÁÉÍÓÚÑ]/.test(orig[fin] || '')) { pal.push(orig[fin]); fin++; }
+      d.ciudad = capital(pal.join(' ')); marcar(i, fin); break;
+    }
+  }
 
-  // Cliente: primero los ya usados, luego un nombre con mayúscula después de "a", "con", "donde"…
+  // 7) Mercadería: lo que viene después de "llevar", "vender", "venta de"…
+  for (let i = 0; i < t.length; i++) {
+    if (!/^(llevar|llevarle|lleva|vender|venderle|entregar|entregarle|mostrar|mostrarle|ofrecer|ofrecerle|mercaderia|productos|venta|pedido|catalogo)$/.test(t[i])) continue;
+    let j = i + 1;
+    while (['de', 'del', 'unos', 'unas', 'los', 'las', 'el', 'la', 'le', 'un', 'una', ':'].includes(t[j]) && !(t[j] === 'la' && aNumero(t, j + 1))) j++;
+    const pal = [];
+    while (j < t.length && !usado[j] && !esPunt(t[j]) && pal.length < 6) {
+      if (['a', 'al', 'en', 'para', 'donde', 'con', 'hoy', 'manana', 'pasado', 'que', 'el', 'cobrar', 'cliente', 'y'].includes(t[j]) && pal.length) break;
+      if (['a', 'al', 'en', 'para', 'donde', 'con', 'hoy', 'manana', 'pasado', 'que', 'el', 'cliente'].includes(t[j])) break;
+      pal.push(orig[j]); j++;
+    }
+    if (pal.length) { d.mercaderia = pal.join(' ').replace(/^./, c => c.toUpperCase()); marcar(i, j); if (!d.tipo) d.tipo = 'venta'; break; }
+  }
+
+  // 8) Cliente: los ya usados; si no, el nombre después de "a", "con", "donde", "señora"…
   const clientes = [...new Set(citas.map(c => c.cliente).filter(Boolean))].sort((x, y) => y.length - x.length);
+  const planoTodo = ' ' + t.join(' ') + ' ';
   for (const c of clientes) {
-    const corto = c.replace(/\s*\(.*\)\s*$/, '');
-    if (b.includes(sinTildes(c.toLowerCase())) || (corto.length > 3 && b.includes(sinTildes(corto.toLowerCase())))) { d.cliente = c; break; }
+    const corto = sinTildes(c.replace(/\s*\(.*\)\s*$/, '').replace(/\s*-.*$/, '').toLowerCase()).replace(/[^\w ]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (corto.length > 3 && planoTodo.includes(' ' + corto + ' ')) { d.cliente = c; break; }
   }
   if (!d.cliente) {
-    const prohibidas = new Set([...DIAS_N, ...MESES_N, 'hoy', 'manana']);
-    const T = '(?:[Ss]eñora?|[Ss]r\\.?|[Ss]ra\\.?|[Dd]on|[Dd]oña|[Ii]ngenier[oa]|[Ii]ng\\.?|[Dd]octor[a]?|[Dd]r\\.?|[Dd]ra\\.?|[Ll]icenciad[oa]|[Ll]cd[oa]\\.?|[OoÓó]ptica|[Aa]lmac[eé]n|[Tt]ienda)';
-    const re = new RegExp('(?:^|\\s)(?:[Aa]|[Aa]l|[Aa] la|[Cc]on|[Cc]liente|[Dd]onde|[Pp]ara|[Vv]isitar a|[Vv]er a)\\s+((?:' + T + '\\s+)?[A-ZÁÉÍÓÚÑ][\\wáéíóúñ]+(?:\\s+(?:de\\s+(?:la\\s+)?)?[A-ZÁÉÍÓÚÑ][\\wáéíóúñ]+){0,3})', 'g');
-    for (const x of txt.matchAll(re)) {
-      let nombre = x[1].trim();
-      if (d.ciudad) nombre = nombre.replace(new RegExp('\\s+' + escRe(d.ciudad) + '$'), '');
-      const primera = sinTildes(nombre.split(' ').pop().toLowerCase());
-      if (!/^[A-ZÁÉÍÓÚÑ]/.test(nombre.replace(/^(señora?|sr\.?|sra\.?|don|doña|ingenier[oa]|ing\.?|doctor[a]?|dr\.?|dra\.?|licenciad[oa]|lcd[oa]\.?|[oó]ptica|almac[eé]n|tienda)\s+/i, ''))) continue;
-      if (nombre === d.ciudad || prohibidas.has(primera)) continue;
-      d.cliente = nombre; break;
+    const candidatos = [];
+    for (let i = 0; i < t.length; i++) {
+      const esTitulo = TITULOS.has(t[i]);
+      if (!ACTIVADORES.has(t[i]) && !esTitulo) continue;
+      let j = esTitulo ? i : i + 1;
+      if (t[i] === 'a' && t[j] === 'la' && TITULOS.has(t[j + 1])) j++;   // "a la señora…"
+      if (t[i] === 'a' && t[j] === 'la' && (t[j + 1] === 'una' || aNumero(t, j + 1))) continue; // "a la una" es hora
+      if ((t[i] === 'visitar' || t[i] === 'visita' || t[i] === 'ver') && t[j] === 'a') j++;
+      const pal = [];
+      while (j < t.length && pal.length < 5) {
+        const w = t[j];
+        if (usado[j] || esPunt(w) || /^\$?\d/.test(w) || w in NUMS) break;
+        if (PEQ.has(w) && pal.length && t[j + 1] && !PARADAS.has(t[j + 1]) && !usado[j + 1] && !esPunt(t[j + 1])) { pal.push(orig[j]); j++; continue; }
+        if (PARADAS.has(w) && !TITULOS.has(w)) break;
+        pal.push(orig[j]); j++;
+      }
+      const reales = pal.filter(w => !TITULOS.has(sinTildes(w.toLowerCase())) && !PEQ.has(w.toLowerCase()));
+      if (reales.length) candidatos.push({ nombre: capital(pal.join(' ')), puntos: (esTitulo ? 2 : 0) + (/^[A-ZÁÉÍÓÚÑ]/.test(reales[0]) ? 1 : 0) + Math.min(reales.length, 3), i, j });
     }
+    candidatos.sort((a, b) => b.puntos - a.puntos || a.i - b.i);
+    if (candidatos[0]) { d.cliente = candidatos[0].nombre; marcar(candidatos[0].i, candidatos[0].j); }
   }
 
-  // Mercadería
-  m = txt.match(/\b(?:llevar(?:le)?|lleva|vender(?:le)?|venta de|entregar(?:le)?|mostrar(?:le)?|ofrecer(?:le)?|mercader[ií]a)\s+(?:de\s+|unos?\s+|unas?\s+|los\s+|las\s+|el\s+|la\s+)?([^,.;]+?)(?=\s+(?:a|al|a la|en|el|para|donde|con|mañana|hoy|pasado|que)\s|[,.;]|\s*$)/i);
-  if (m) d.mercaderia = m[1].trim();
-  if (!d.tipo && d.mercaderia) d.tipo = 'venta';
+  // 9) Nota: lo que se dijo después de "nota", "recordar" o "referencia"
+  const iNota = t.findIndex(w => /^(nota|recordar|recordarle|referencia|observacion|ojo)$/.test(w));
+  if (iNota >= 0) {
+    const resto = orig.slice(iNota + 1).filter(w => !esPunt(w) || w === ',').join(' ').replace(/^(que|:)\s*/i, '').trim();
+    if (resto) d.nota = (d.nota ? d.nota + ' · ' : '') + resto.replace(/^./, c => c.toUpperCase());
+  }
+  return d;
+}
+
+// Guarda el texto dictado en la nota si algún dato quedó sin llenar, para no perder nada.
+function completarNota(d, texto) {
+  const falta = !d.cliente || !d.ciudad || !d.tipo || (d.tipo === 'venta' && !d.mercaderia) || (d.tipo === 'cobro' && !d.monto);
+  if (falta && !d.nota) d.nota = 'Dictado: ' + texto.trim();
   return d;
 }
 
@@ -1212,7 +1351,7 @@ async function llenarDictado() {
     const r = await api('interpretar', { texto, hoy: hoyISO(), dia: new Date().toLocaleDateString('es-EC', { weekday: 'long' }) });
     datos = r.datos;
   } catch (e) { datos = null; }
-  aplicarDictado(datos || interpretarLocal(texto));
+  aplicarDictado(completarNota(datos || interpretarLocal(texto), texto));
   b.disabled = false; b.textContent = 'Llenar con lo dictado';
 }
 $('#btnVoz').addEventListener('click', llenarDictado);
