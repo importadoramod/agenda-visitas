@@ -375,7 +375,7 @@ label{font-weight:500;color:var(--muted);font-size:15px}
     <div id="cajaVoz" class="voz">
       <label for="f_voz">Dictar la cita</label>
       <button type="button" id="btnMic">🎤 Toque y hable</button>
-      <p class="ayuda">Diga todo seguido. Ejemplo: «el martes a las tres, cobrar 50 dólares a María Pérez en Ambato».</p>
+      <p class="ayuda" id="micAyuda"></p>
       <textarea id="f_voz" rows="3" placeholder="Aquí aparece lo que dijo"></textarea>
       <button type="button" id="btnVoz">Llenar con lo dictado</button>
       <p class="ayuda">O escriba cada dato abajo.</p>
@@ -1060,7 +1060,7 @@ function abrir(c) {
   elegirTipo(c ? c.tipo : '');
   $('#modal').hidden = false; $('#modal').scrollTop = 0;
 }
-const cerrar = () => { $('#modal').hidden = true; };
+const cerrar = () => { if (escuchando) { escuchando = false; try { reco && reco.abort(); } catch (e) {} pintarMic(); } $('#modal').hidden = true; };
 
 $('#form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -1357,35 +1357,73 @@ async function llenarDictado() {
 $('#btnVoz').addEventListener('click', llenarDictado);
 
 const Reco = window.SpeechRecognition || window.webkitSpeechRecognition;
-let reco = null, escuchando = false;
+// Escucha sin cortarse: si el teléfono deja de escuchar por una pausa, vuelve a escuchar solo
+// hasta que la persona toque «Listo, terminé» (o pasen 5 minutos).
+let reco = null, escuchando = false, textoFinal = '', reintentos = 0, inicioDictado = 0, timerPausa = null;
 function pintarMic() {
   const b = $('#btnMic');
   b.textContent = escuchando ? '⏹ Listo, terminé' : '🎤 Toque y hable';
   b.classList.toggle('on', escuchando);
+  $('#micAyuda').textContent = escuchando
+    ? 'Escuchando… Puede hablar despacio y hacer pausas. Toque «Listo, terminé» al acabar.'
+    : 'Puede hablar despacio y con pausas. Ejemplo: «el martes a las tres, cobrar 50 dólares a María Pérez en Ambato».';
+}
+function juntar(base, parte) {
+  parte = parte.trim();
+  if (!parte) return base;
+  if (base.toLowerCase().endsWith(parte.toLowerCase())) return base; // algunos Android repiten la frase al reanudar
+  return (base ? base + ' ' : '') + parte;
+}
+function empezarReco() {
+  reco = new Reco();
+  reco.lang = 'es-EC'; reco.interimResults = true; reco.continuous = true; reco.maxAlternatives = 1;
+  reco.onresult = ev => {
+    let provisional = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const r = ev.results[i];
+      if (r.isFinal) textoFinal = juntar(textoFinal, r[0].transcript);
+      else provisional += r[0].transcript;
+    }
+    $('#f_voz').value = juntar(textoFinal, provisional);
+    reintentos = 0;
+  };
+  reco.onerror = ev => {
+    if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed' || ev.error === 'audio-capture') {
+      escuchando = false;
+      $('#err').textContent = ev.error === 'audio-capture' ? 'No se encontró el micrófono.' : 'Dé permiso al micrófono para dictar, o use el micrófono del teclado.';
+    }
+    // 'no-speech', 'aborted' y 'network' son pausas o cortes: se vuelve a escuchar en onend
+  };
+  reco.onend = () => {
+    if (escuchando && Date.now() - inicioDictado < 5 * 60 * 1000 && reintentos < 40) {
+      reintentos++;
+      clearTimeout(timerPausa);
+      timerPausa = setTimeout(() => { if (escuchando) { try { empezarReco(); } catch (e) { terminarDictado(); } } }, 250);
+      return;
+    }
+    terminarDictado();
+  };
+  reco.start();
+}
+function terminarDictado() {
+  const seguia = escuchando;
+  escuchando = false; clearTimeout(timerPausa); pintarMic();
+  if (seguia && reco) { try { reco.stop(); } catch (e) {} return; } // onend vuelve a llamar aquí
+  const texto = $('#f_voz').value.trim();
+  if (texto) llenarDictado();
 }
 if (!Reco) {
   $('#btnMic').hidden = true;
   $('#f_voz').placeholder = 'Toque aquí y use el micrófono 🎤 del teclado';
 } else {
   $('#btnMic').addEventListener('click', () => {
-    if (escuchando && reco) { reco.stop(); return; }
-    reco = new Reco();
-    reco.lang = 'es-EC'; reco.interimResults = true; reco.continuous = false; reco.maxAlternatives = 1;
-    const base = $('#f_voz').value.trim();
-    reco.onresult = ev => {
-      let t = '';
-      for (let i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
-      $('#f_voz').value = (base ? base + ' ' : '') + t.trim();
-    };
-    reco.onerror = ev => {
-      $('#err').textContent = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
-        ? 'Dé permiso al micrófono para dictar, o use el micrófono del teclado.'
-        : ev.error === 'no-speech' ? 'No se escuchó nada. Toque el micrófono y hable cerca.' : 'No se pudo escuchar. Intente otra vez.';
-    };
-    reco.onend = () => { escuchando = false; pintarMic(); if ($('#f_voz').value.trim() && $('#f_voz').value.trim() !== base) llenarDictado(); };
-    try { reco.start(); escuchando = true; pintarMic(); $('#err').textContent = ''; } catch (e) { escuchando = false; pintarMic(); }
+    if (escuchando) { terminarDictado(); return; }
+    textoFinal = $('#f_voz').value.trim(); reintentos = 0; inicioDictado = Date.now();
+    $('#err').textContent = '';
+    try { escuchando = true; pintarMic(); empezarReco(); } catch (e) { escuchando = false; pintarMic(); }
   });
 }
+pintarMic();
 
 /* ---------- facilidades ---------- */
 function ponerLetra(g) {
