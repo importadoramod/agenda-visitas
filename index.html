@@ -345,6 +345,45 @@ label{font-weight:500;color:var(--muted);font-size:15px}
 #toast{font-weight:500;border-radius:99px}
 #alerta{font-weight:500}
 @media (prefers-reduced-motion:no-preference){nav button,.ic-modos button,.acc button{transition:background .15s,color .15s}}
+
+/* ---------- Ópticas ---------- */
+nav button{font-size:16px}
+.op-cab{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;width:100%;border:0;background:transparent;color:inherit;padding:0;text-align:left}
+.op-cab .cn{margin:0;min-width:0}
+.op-deuda{flex:none;font-size:15px;font-weight:700;color:var(--cobro);background:color-mix(in srgb,var(--cobro) 14%,transparent);padding:4px 10px;border-radius:99px}
+.op-ok{flex:none;font-size:14px;color:var(--muted);padding:4px 0}
+.acc a.btnlink{flex:1 1 30%;min-height:52px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:14px;color:var(--ink);text-decoration:none;font-size:17px;font-weight:500;background:transparent;text-align:center;padding:0 6px}
+.acc a.btnlink.llegar{flex-basis:100%;background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.op-importar{width:100%;margin-top:12px}
+#fichaCont{display:flex;flex-direction:column;gap:14px}
+#fichaCont .aj-sec{width:100%}
+.card.op{margin:0}
+#lista .periodos + .lista,#lista .op-importar + .lista,#lista .periodos + .op-importar{margin-top:14px}
+#lista .periodos + .vacio{margin-top:14px}
+.op-tit{font-family:var(--f-display);font-size:26px;font-weight:500;margin:6px 0 4px}
+.op-lin{margin:2px 0;color:var(--muted);font-size:18px;overflow-wrap:anywhere}
+.op-lin small{font-size:14px}
+.op-acc{border-top:0;padding-top:4px}
+.op-caja{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.op-saldo{margin:0;font-family:var(--f-display);font-size:30px;font-weight:500}
+.op-saldo.debe{color:var(--cobro)}
+.movs{display:flex;flex-direction:column}
+.mov{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:16px}
+.mov span{color:var(--muted);min-width:0}
+.mov b{flex:none;font-variant-numeric:tabular-nums;font-weight:600}
+.mov b.menos{color:var(--venta)} .mov b.mas{color:var(--cobro)}
+#movForm{display:flex;flex-direction:column;gap:8px}
+#movForm[hidden]{display:none!important}
+#fichaCerrar{align-self:flex-start;min-height:48px;padding:0 18px;border-radius:12px;border:0;background:var(--soft);color:var(--ink);font-size:18px;font-weight:500}
+#formOptica form{max-width:620px;margin:0 auto}
+#opBorrar{margin-top:18px;min-height:54px;font-size:18px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--danger)}
+#opBorrar.seguro{background:var(--danger);color:var(--surface)}
+#op_deuda button[data-d="si"][aria-pressed="true"]{background:var(--cobro);border-color:var(--cobro);color:var(--surface)}
+#op_deuda button[data-d="no"][aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.hoja.chica{z-index:26;background:color-mix(in srgb,var(--bg) 92%,transparent);display:flex;align-items:flex-end}
+.hoja.chica[hidden]{display:none!important}
+.hoja.chica .hojaIn{background:var(--surface);border-radius:22px 22px 0 0;width:100%;box-shadow:0 -8px 30px rgb(0 0 0 / .25)}
+.ruta{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;min-height:54px;border-radius:14px;background:var(--ink);color:var(--bg);text-decoration:none;font-size:18px;font-weight:500}
 </style>
 </head>
 <body>
@@ -357,6 +396,7 @@ label{font-weight:500;color:var(--muted);font-size:15px}
   <nav>
     <button id="v_hoy" data-v="hoy" aria-pressed="true">Hoy</button>
     <button id="v_mes" data-v="mes" aria-pressed="false">Calendario</button>
+    <button id="v_op" data-v="opticas" aria-pressed="false">Ópticas</button>
     <button id="v_res" data-v="resumen" aria-pressed="false">Resumen</button>
   </nav>
 </header>
@@ -380,6 +420,10 @@ label{font-weight:500;color:var(--muted);font-size:15px}
       <button type="button" id="btnVoz">Llenar con lo dictado</button>
       <p class="ayuda">O escriba cada dato abajo.</p>
     </div>
+    <label for="f_optica">Óptica (opcional)</label>
+    <input id="f_optica" list="opticasLista" placeholder="Escriba el nombre de la óptica" autocomplete="off">
+    <datalist id="opticasLista"></datalist>
+    <p class="ayuda" id="opticaEstado"></p>
     <label for="f_fecha">Fecha</label>
     <div class="rapidas"><button type="button" data-d="0">Hoy</button><button type="button" data-d="1">Mañana</button><button type="button" data-d="2">Pasado mañana</button></div>
     <input type="date" id="f_fecha">
@@ -483,6 +527,42 @@ label{font-weight:500;color:var(--muted);font-size:15px}
     <button type="submit" id="cfgOk" class="aj-btn">Conectar</button>
   </form>
 </div>
+<div id="ficha" class="hoja" hidden><div class="hojaIn"><button id="fichaCerrar">‹ Volver</button><div id="fichaCont"></div></div></div>
+<div id="formOptica" class="hoja" hidden>
+  <form id="formOpticaForm" novalidate>
+    <h3 id="opTit">Nueva óptica</h3>
+    <label for="op_nombre">Nombre de la óptica</label>
+    <input id="op_nombre" autocomplete="off">
+    <label for="op_dueno">Nombre del dueño</label>
+    <input id="op_dueno" autocomplete="off">
+    <label for="op_tel">Teléfono o celular</label>
+    <input id="op_tel" type="tel" inputmode="tel" autocomplete="off">
+    <label for="op_ciudad">Ciudad o sector</label>
+    <input id="op_ciudad" list="ciudades" autocomplete="off">
+    <label>Ubicación</label>
+    <button type="button" id="btnGps" class="aj-btn">📍 Usar mi ubicación actual</button>
+    <p class="ayuda">Tóquelo cuando esté en la óptica. O pegue aquí un enlace de Google Maps o escriba la dirección:</p>
+    <input id="op_mapa" autocomplete="off" placeholder="Enlace de Maps o dirección">
+    <p class="ayuda" id="ubicEstado"></p>
+    <label for="op_ref">Referencia</label>
+    <input id="op_ref" autocomplete="off" placeholder="Ej.: frente al parque, local 3">
+    <label>¿Tiene cuentas por cobrar?</label>
+    <div class="tipos" id="op_deuda"><button type="button" data-d="si" aria-pressed="false">Sí</button><button type="button" data-d="no" aria-pressed="true">No</button></div>
+    <div id="campoSaldo" hidden>
+      <label for="op_saldo">¿Cuánto debe ahora? ($)</label>
+      <input id="op_saldo" type="number" inputmode="decimal" step="0.01" min="0">
+    </div>
+    <div class="err" id="opErr"></div>
+    <div class="botones"><button type="button" id="opCancelar">Cancelar</button><button type="submit" id="opGuardar">Guardar</button></div>
+    <button type="button" id="opBorrar" hidden>🗑 Borrar esta óptica</button>
+  </form>
+</div>
+<div id="cobroSheet" class="hoja chica" hidden><div class="hojaIn">
+  <h3 id="cobroTxt">¿Cuánto cobró?</h3>
+  <input id="cobro_monto" type="number" inputmode="decimal" step="0.01" min="0">
+  <div class="botones"><button type="button" id="cobroNo">No cobré</button><button type="button" id="cobroOk">Guardar cobro</button></div>
+  <button type="button" id="cobroCancelar" class="aj-sec">Cancelar</button>
+</div></div>
 <div id="detalle" class="hoja" hidden><div class="hojaIn"><button id="detCerrar">‹ Volver al calendario</button><div id="detCard"></div></div></div>
 <div id="alerta" role="alert" hidden><div><span id="alertaTxt"></span><button id="alertaOk">Entendido</button></div></div>
 <div id="toast" hidden></div>
@@ -532,7 +612,15 @@ async function api(a, datos = {}, conf = cfg) {
   } catch (e) { if (!e.code) e.code = 'red'; throw e; }
   finally { clearTimeout(t); }
 }
-function escribirLocal() { guardarJSON(LK, citas.map(limpia)); guardarJSON(LKP, pendientes); }
+// Tablas extra (ópticas y abonos). Viajan por la misma cola de cambios que las citas.
+const LKT = 'agenda_tablas_v1', LKR = 'agenda_reenviar_v1';
+let tablas = { opticas: [], abonos: [] }, servidorV = 0, reenviar = [];
+const numOptica = o => ({ ...o, lat: o.lat === '' ? '' : o.lat, lng: o.lng === '' ? '' : o.lng });
+const numAbono = a => ({ ...a, monto: Number(a.monto || 0) });
+function escribirLocal() {
+  guardarJSON(LK, citas.map(limpia)); guardarJSON(LKP, pendientes); guardarJSON(LKR, reenviar);
+  guardarJSON(LKT, { opticas: tablas.opticas.map(limpia), abonos: tablas.abonos.map(limpia) });
+}
 // Los cambios que todavía no llegan al servidor se muestran igual.
 function aplicarPendientes(lista) {
   let l = lista.map(limpia);
@@ -542,42 +630,93 @@ function aplicarPendientes(lista) {
   });
   return l;
 }
+function aplicarPendT(tabla, lista) {
+  let l = lista.map(limpia);
+  pendientes.forEach(op => {
+    if (op.tabla !== tabla) return;
+    if (op.a === 'tguardar') { const i = l.findIndex(x => x.id === op.fila.id); const v = { ...l[i], ...op.fila, _pend: true }; i >= 0 ? l[i] = v : l.push(v); }
+    if (op.a === 'tborrar') l = l.filter(x => x.id !== op.id);
+  });
+  return l;
+}
+function aplicarTodo() {
+  citas = aplicarPendientes(citas);
+  tablas.opticas = aplicarPendT('opticas', tablas.opticas).map(numOptica);
+  tablas.abonos = aplicarPendT('abonos', tablas.abonos).map(numAbono);
+}
 function estadoConexion() {
+  const activos = pendientes.filter(op => !op.espera).length, esperan = pendientes.length - activos;
   if (!pendientes.length) { aviso(''); return; }
+  if (!activos) { aviso('Las ópticas y cobros se guardaron en este celular. Subirán solos cuando se actualice el servidor.'); return; }
   aviso(navigator.onLine === false
-    ? `Sin internet. ${pendientes.length === 1 ? '1 cambio se guardará' : pendientes.length + ' cambios se guardarán'} solo cuando vuelva la señal.`
-    : `Guardando ${pendientes.length === 1 ? '1 cambio' : pendientes.length + ' cambios'}…`);
+    ? `Sin internet. ${activos === 1 ? '1 cambio se guardará' : activos + ' cambios se guardarán'} solo cuando vuelva la señal.`
+    : `Guardando ${activos === 1 ? '1 cambio' : activos + ' cambios'}…`);
+}
+function cuerpoOp(op) {
+  if (op.a === 'guardar') return { cita: op.cita };
+  if (op.a === 'borrar') return { id: op.id };
+  if (op.a === 'tguardar') return { tabla: op.tabla, fila: op.fila };
+  return { tabla: op.tabla, id: op.id };
 }
 async function enviarPendientes() {
   if (enviando || !pendientes.length || !cfg) { estadoConexion(); return; }
   enviando = true; estadoConexion();
+  let i = 0;
   try {
-    while (pendientes.length) {
-      const op = pendientes[0];
-      const r = await api(op.a, op.a === 'guardar' ? { cita: op.cita } : { id: op.id });
-      pendientes.shift();
-      if (op.a === 'guardar' && r.cita) { const i = citas.findIndex(x => x.id === r.cita.id); if (i >= 0) citas[i] = r.cita; }
-      escribirLocal();
+    while (i < pendientes.length) {
+      const op = pendientes[i];
+      if (op.espera && servidorV < 2) { i++; continue; } // el servidor viejo todavía no conoce ópticas
+      try {
+        const r = await api(op.a, cuerpoOp(op));
+        pendientes.splice(i, 1);
+        if (op.a === 'guardar' && r.cita) {
+          const k = citas.findIndex(x => x.id === r.cita.id);
+          // El servidor viejo no guarda la óptica de la cita: se conserva aquí y se reenvía después
+          if (op.cita.opticaId && !r.cita.opticaId) { r.cita.opticaId = op.cita.opticaId; if (!reenviar.includes(r.cita.id)) reenviar.push(r.cita.id); }
+          if (k >= 0) citas[k] = r.cita;
+        }
+        if (op.a === 'tguardar' && r.fila) { const t = tablas[op.tabla] || []; const k = t.findIndex(x => x.id === r.fila.id); if (k >= 0) t[k] = { ...t[k], ...op.fila, actualizado: r.fila.actualizado }; }
+        escribirLocal();
+      } catch (e) {
+        if (e.code === 'accion' && op.a.startsWith('t')) { op.espera = true; i++; continue; }
+        throw e;
+      }
     }
   } catch (e) {
     if (e.code === 'clave') pedirConfig('La clave ya no sirve. Abra el enlace nuevo que le enviaron.');
-    else if (e.servidor && /fecha/.test(e.detalle || '')) { pendientes.shift(); toast('Una cita tenía la fecha mal y no se guardó.', 5000); }
+    else if (e.servidor && /fecha/.test(e.detalle || '')) { pendientes.splice(i, 1); toast('Una cita tenía la fecha mal y no se guardó.', 5000); }
     else if (e.servidor) aviso('El servidor dio un error y los cambios siguen guardados en el celular. Detalle: ' + (e.detalle || e.code));
   } finally {
-    enviando = false; citas = aplicarPendientes(citas); escribirLocal(); render(); estadoConexion();
+    enviando = false; aplicarTodo(); escribirLocal(); render();
+    if (e_aviso()) estadoConexion();
   }
 }
+const e_aviso = () => !$('#aviso').textContent.startsWith('El servidor dio un error');
+function encolar(op, clave) {
+  pendientes = pendientes.filter(x => !(clave(x)));
+  pendientes.push(op);
+}
 async function guardarCita(c) {
-  pendientes = pendientes.filter(op => !(op.a === 'guardar' && op.cita.id === c.id));
-  pendientes.push({ a: 'guardar', cita: limpia(c) });
-  citas = aplicarPendientes(citas); escribirLocal(); render();
+  encolar({ a: 'guardar', cita: limpia(c) }, x => x.a === 'guardar' && x.cita.id === c.id);
+  aplicarTodo(); escribirLocal(); render();
   enviarPendientes();
 }
 async function borrarCita(id) {
   pendientes = pendientes.filter(op => !(op.a === 'guardar' && op.cita.id === id));
   pendientes.push({ a: 'borrar', id });
-  citas = aplicarPendientes(citas); escribirLocal(); render();
+  aplicarTodo(); escribirLocal(); render();
   enviarPendientes();
+}
+function guardarTabla(tabla, fila, sinEnviar) {
+  encolar({ a: 'tguardar', tabla, fila: limpia(fila) }, x => x.a === 'tguardar' && x.tabla === tabla && x.fila.id === fila.id);
+  aplicarTodo(); escribirLocal();
+  if (!sinEnviar) { render(); enviarPendientes(); }
+}
+function borrarTabla(tabla, id, sinEnviar) {
+  pendientes = pendientes.filter(x => !(x.tabla === tabla && x.a === 'tguardar' && x.fila.id === id));
+  pendientes.push({ a: 'tborrar', tabla, id });
+  aplicarTodo(); escribirLocal();
+  if (!sinEnviar) { render(); enviarPendientes(); }
 }
 async function cargar(forzar) {
   if (!cfg) { pedirConfig(); return; }
@@ -585,9 +724,21 @@ async function cargar(forzar) {
   ultimaCarga = Date.now();
   try {
     const r = await api('listar');
+    servidorV = Number(r.v || 1);
     cuenta = r.cuenta || cuenta;
     if (r.calendario) { calElegido = r.calendario.id; calNombre = r.calendario.nombre; }
-    if (!enviando) citas = aplicarPendientes(r.citas || []);
+    if (!enviando) {
+      const antes = new Map(citas.map(c => [c.id, c.opticaId]));
+      citas = (r.citas || []).map(c => (!c.opticaId && antes.get(c.id)) ? { ...c, opticaId: antes.get(c.id) } : c);
+      if (servidorV >= 2) {
+        tablas.opticas = r.opticas || []; tablas.abonos = r.abonos || [];
+        pendientes.forEach(op => { delete op.espera; });
+        // Citas cuya óptica no guardó el servidor viejo: se envían otra vez
+        reenviar.forEach(id => { const c = citas.find(x => x.id === id); if (c && c.opticaId) encolar({ a: 'guardar', cita: limpia(c) }, x => x.a === 'guardar' && x.cita.id === id); });
+        reenviar = [];
+      }
+      aplicarTodo();
+    }
     escribirLocal(); pintarCalActual(); render(); estadoConexion();
     enviarPendientes();
   } catch (e) {
@@ -632,7 +783,8 @@ function pintarCalActual() { $('#calActual').textContent = cfg ? '📅 ' + calNo
 function iniciar() {
   leerConfig();
   citas = leerJSON(LK, []); pendientes = leerJSON(LKP, []);
-  citas = aplicarPendientes(citas);
+  const t = leerJSON(LKT, {}); tablas.opticas = t.opticas || []; tablas.abonos = t.abonos || []; reenviar = leerJSON(LKR, []);
+  aplicarTodo();
   render(); pintarCalActual();
   if (!cfg) { pedirConfig(); return; }
   cargar(true);
@@ -795,6 +947,7 @@ function card(c) {
     ${det}
     ${c.nota ? `<div class="cno">Nota: ${esc(c.nota)}</div>` : ''}
     <div class="acc">
+      ${(() => { const o = opticaDe(c); return o && tieneUbic(o) ? `<a class="btnlink llegar" href="${esc(urlLlegar(o))}" target="_blank" rel="noopener">🧭 Cómo llegar</a>` : ''; })()}
       ${c.eventId ? `<span class="encal">📅 Alarma puesta en Google Calendar</span>` : c._pend ? `<span class="encal">⏳ Guardando…</span>` : ''}
       <button class="ok" data-a="marcar" data-id="${c.id}">${c.estado === 'hecho' ? '↩ No fui' : '✓ Ya fui'}</button>
       <button data-a="editar" data-id="${c.id}">✏️ Cambiar</button>
@@ -812,7 +965,9 @@ function porDia(lista) {
 function render() {
   const h = hoyISO();
   const fl = fechaLarga(h); $('#hoyTxt').textContent = fl.charAt(0).toUpperCase() + fl.slice(1);
-  $('#buscar').hidden = !(vista === 'todas' || (vista === 'mes' && calModo === 'lista'));
+  $('#buscar').hidden = !(vista === 'todas' || vista === 'opticas' || (vista === 'mes' && calModo === 'lista'));
+  $('#buscar').placeholder = vista === 'opticas' ? '🔎 Buscar óptica, dueño o ciudad' : '🔎 Buscar cliente o ciudad';
+  $('#nueva span').textContent = vista === 'opticas' ? '＋ Nueva óptica' : '＋ Nueva cita';
   let html = '';
   if (vista === 'hoy') {
     const atr = citas.filter(c => pend(c) && c.fecha < h).sort(orden);
@@ -822,6 +977,8 @@ function render() {
     html += `<p class="saludo">${hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches'} 👋</p>
       <p class="frase">${np === 0 ? 'Hoy no tiene visitas pendientes.' : `Hoy tiene <b style="color:var(--ink)">${np} ${np === 1 ? 'visita' : 'visitas'}</b> por hacer.`}
       ${cobrar > 0 ? ` Debe cobrar <b>${money(cobrar)}</b>.` : ''}</p>`;
+    const ruta = urlRutaHoy();
+    if (ruta) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">🗺 Ver la ruta de hoy en Google Maps</a>`;
     if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2><div class="lista">' + atr.map(card).join('') + '</div>';
     html += '<h2>Visitas de hoy</h2>' + (hoy.length ? '<div class="lista">' + hoy.map(card).join('') + '</div>'
       : '<p class="vacio">No hay visitas para hoy. Toque <b>Nueva cita</b> para anotar una.</p>');
@@ -832,6 +989,8 @@ function render() {
     html = resumenHTML();
   } else if (vista === 'mes') {
     html = calendarioHTML();
+  } else if (vista === 'opticas') {
+    html = opticasHTML();
   } else {
     const q = $('#buscar').value.trim().toLowerCase();
     const todas = citas.filter(c => !q || [c.cliente, c.ciudad, c.mercaderia].join(' ').toLowerCase().includes(q)).sort((a, b) => orden(b, a));
@@ -843,6 +1002,8 @@ function render() {
   const uniq = k => [...new Set(citas.map(c => c[k]).filter(Boolean))].sort();
   $('#ciudades').innerHTML = uniq('ciudad').map(v => `<option value="${esc(v)}">`).join('');
   $('#mercs').innerHTML = uniq('mercaderia').map(v => `<option value="${esc(v)}">`).join('');
+  $('#opticasLista').innerHTML = tablas.opticas.map(o => `<option value="${esc(o.nombre)}">`).join('');
+  if (fichaId && !$('#ficha').hidden && $('#movForm') && $('#movForm').hidden) verFicha(fichaId);
 }
 
 /* ---------- resumen: día, semana, mes, año (con anterior / siguiente) ---------- */
@@ -886,6 +1047,8 @@ function resumenHTML() {
       <div class="dato"><small>Ya cobrado</small><b>${money(cobrado)}</b></div>
       <div class="dato"><small>Falta cobrar</small><b class="cobro">${money(porCobrar)}</b></div>
       <div class="dato ancho"><small>Pendientes por visitar</small><b>${pendientes.length}</b></div>
+      <div class="dato"><small>Cobros registrados</small><b>${money(-tablas.abonos.filter(a => a.tipo === 'abono' && a.fecha >= r.desde && a.fecha <= r.hasta).reduce((s, a) => s + Number(a.monto || 0), 0))}</b></div>
+      <div class="dato"><small>Por cobrar (ópticas)</small><b class="cobro">${money(totalPorCobrar())}</b></div>
     </div>`;
   if (periodo === 'semana') {
     const d0 = new Date(r.desde + 'T00:00:00'); const filas = [];
@@ -1042,6 +1205,263 @@ function elegirTipo(t) {
   $('#campoVenta').hidden = t !== 'venta';
   $('#campoCobro').hidden = t !== 'cobro';
 }
+/* ---------- ópticas: fichas, ubicación, cómo llegar y cuentas por cobrar ---------- */
+let filtroOp = 'todas', opEditId = null, opDeuda = false, opUbic = null, fichaId = null, movTipo = '', cobroCita = null, opticaSel = '';
+const normalTxt = t => sinTildes(String(t || '').toLowerCase()).replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+function opticaDe(c) {
+  if (!c) return null;
+  const porId = c.opticaId && tablas.opticas.find(o => o.id === c.opticaId);
+  if (porId) return porId;
+  const n = normalTxt(c.cliente);
+  if (!n) return null;
+  return tablas.opticas.find(o => { const on = normalTxt(o.nombre); return on && (n === on || n.startsWith(on + ' ') || n.endsWith(' ' + on)); }) || null;
+}
+const movsDe = o => tablas.abonos.filter(a => a.opticaId === o.id).sort((a, b) => (b.fecha + (b.creado || '')).localeCompare(a.fecha + (a.creado || '')));
+const saldoDe = o => Math.round(movsDe(o).reduce((s, a) => s + Number(a.monto || 0), 0) * 100) / 100;
+const totalPorCobrar = () => tablas.opticas.reduce((s, o) => s + Math.max(0, saldoDe(o)), 0);
+const tieneUbic = o => !!(o && ((o.lat && o.lng) || o.mapsUrl || o.direccion));
+function urlLlegar(o) {
+  if (o.lat && o.lng) return `https://www.google.com/maps/dir/?api=1&destination=${o.lat},${o.lng}`;
+  if (o.mapsUrl) return o.mapsUrl;
+  return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent([o.direccion, o.ciudad, 'Ecuador'].filter(Boolean).join(', '));
+}
+const destino = o => (o.lat && o.lng) ? `${o.lat},${o.lng}` : [o.direccion || o.nombre, o.ciudad, 'Ecuador'].filter(Boolean).join(', ');
+const telDigitos = t => String(t || '').replace(/\D/g, '');
+const urlWhats = t => { let d = telDigitos(t); if (d.startsWith('0')) d = '593' + d.slice(1); return 'https://wa.me/' + d; };
+function botonesContacto(o, chico) {
+  let h = '';
+  if (tieneUbic(o)) h += `<a class="btnlink llegar" href="${esc(urlLlegar(o))}" target="_blank" rel="noopener">🧭 Cómo llegar</a>`;
+  if (telDigitos(o.telefono).length >= 7) h += `<a class="btnlink" href="tel:${telDigitos(o.telefono)}">📞 Llamar</a><a class="btnlink" href="${urlWhats(o.telefono)}" target="_blank" rel="noopener">💬 WhatsApp</a>`;
+  return h;
+}
+function deudaHTML(o) {
+  const s = saldoDe(o);
+  return s > 0 ? `<span class="op-deuda">Debe ${money(s)}</span>` : `<span class="op-ok">Sin deuda</span>`;
+}
+
+function opticasHTML() {
+  const q = normalTxt($('#buscar').value);
+  const todas = tablas.opticas.slice().sort((a, b) => String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es'));
+  const conDeuda = todas.filter(o => saldoDe(o) > 0);
+  const lista = (filtroOp === 'deuda' ? conDeuda : todas).filter(o => !q || normalTxt([o.nombre, o.dueno, o.ciudad, o.referencia].join(' ')).includes(q));
+  let h = `<div class="cifras">
+      <div class="dato"><small>Ópticas</small><b>${todas.length}</b></div>
+      <div class="dato"><small>Total por cobrar</small><b class="cobro">${money(totalPorCobrar())}</b></div></div>
+    <div class="periodos"><button data-opf="todas" aria-pressed="${filtroOp === 'todas'}">Todas (${todas.length})</button>
+      <button data-opf="deuda" aria-pressed="${filtroOp === 'deuda'}">Con deuda (${conDeuda.length})</button></div>`;
+  const sinFicha = clientesSinFicha();
+  if (sinFicha.length) h += `<button class="aj-sec op-importar" data-op-importar="1">➕ Crear fichas de mis ${sinFicha.length} clientes con citas</button>`;
+  if (!lista.length) h += `<p class="vacio">${todas.length ? 'No hay ópticas con esos datos.' : 'Todavía no hay ópticas. Toque <b>＋ Nueva óptica</b> para anotar la primera.'}</p>`;
+  h += '<div class="lista">' + lista.map(o => `<article class="card op">
+      <button class="op-cab" data-op-ver="${o.id}"><span class="cn">${esc(o.nombre)}</span>${deudaHTML(o)}</button>
+      ${o.dueno ? `<div class="cd">👤 ${esc(o.dueno)}</div>` : ''}
+      <div class="cd">📍 ${esc([o.ciudad, o.referencia].filter(Boolean).join(' · ') || 'Sin ubicación')}</div>
+      <div class="acc">${botonesContacto(o)}<button data-op-ver="${o.id}">Ver ficha</button></div></article>`).join('') + '</div>';
+  return h;
+}
+function clientesSinFicha() {
+  const vistos = new Map();
+  citas.slice().sort((a, b) => b.fecha.localeCompare(a.fecha)).forEach(c => {
+    if (!c.cliente || opticaDe(c)) return;
+    const k = normalTxt(c.cliente);
+    if (!vistos.has(k)) vistos.set(k, { nombre: c.cliente, ciudad: c.ciudad });
+  });
+  return [...vistos.values()];
+}
+function importarClientes() {
+  const lista = clientesSinFicha();
+  lista.forEach(x => {
+    guardarTabla('opticas', { id: nuevoId(), nombre: x.nombre.trim(), dueno: '', ciudad: x.ciudad || '', telefono: '', referencia: '', creado: new Date().toISOString() }, true);
+  });
+  enviarPendientes(); render();
+  toast(`Se crearon ${lista.length} fichas. Complete teléfono y ubicación en cada una.`, 4500);
+}
+
+/* Ficha */
+function verFicha(id) {
+  fichaId = id;
+  const o = tablas.opticas.find(x => x.id === id);
+  if (!o) { $('#ficha').hidden = true; fichaId = null; return; }
+  const h0 = hoyISO();
+  const vis = citas.filter(c => opticaDe(c) && opticaDe(c).id === o.id);
+  const prox = vis.filter(c => pend(c) && c.fecha >= h0).sort(orden), pasadas = vis.filter(c => !pend(c) || c.fecha < h0).sort((a, b) => orden(b, a)).slice(0, 6);
+  const movs = movsDe(o), s = saldoDe(o);
+  const etq = { inicial: 'Saldo inicial', ajuste: 'Ajuste de saldo', abono: 'Cobro / abono', venta: 'Venta a crédito' };
+  $('#fichaCont').innerHTML = `
+    <h3 class="op-tit">${esc(o.nombre)}</h3>
+    ${o.dueno ? `<p class="op-lin">👤 ${esc(o.dueno)}</p>` : ''}
+    ${o.telefono ? `<p class="op-lin">📞 ${esc(o.telefono)}</p>` : ''}
+    <p class="op-lin">📍 ${esc([o.direccion, o.ciudad].filter(Boolean).join(', ') || 'Sin dirección')}${o.lat && o.lng ? ' <small>(ubicación GPS guardada)</small>' : ''}</p>
+    ${o.referencia ? `<p class="op-lin">🔎 ${esc(o.referencia)}</p>` : ''}
+    <div class="acc op-acc">${botonesContacto(o) || '<span class="encal">Agregue teléfono y ubicación con «Editar datos».</span>'}</div>
+
+    <section class="op-caja">
+      <p class="aj-et">Cuentas por cobrar</p>
+      <p class="op-saldo ${s > 0 ? 'debe' : ''}">${s > 0 ? 'Debe ' + money(s) : 'Sin deuda'}</p>
+      <div class="rapidas"><button type="button" data-mov="abono">− Registrar cobro</button><button type="button" data-mov="venta">＋ Venta a crédito</button></div>
+      <div id="movForm" hidden>
+        <label for="mov_monto" id="movTit">Valor</label>
+        <input id="mov_monto" type="number" inputmode="decimal" step="0.01" min="0">
+        <input id="mov_nota" placeholder="Detalle (opcional)">
+        <div class="botones"><button type="button" id="movCancelar">Cancelar</button><button type="button" id="movGuardar">Guardar</button></div>
+      </div>
+      ${movs.length ? '<div class="movs">' + movs.slice(0, 12).map(a => `<div class="mov"><span>${fechaCorta(a.fecha)} · ${etq[a.tipo] || 'Movimiento'}${a.nota ? ' · ' + esc(a.nota) : ''}</span><b class="${Number(a.monto) < 0 ? 'menos' : 'mas'}">${Number(a.monto) < 0 ? '−' : '+'}${money(Math.abs(Number(a.monto)))}</b></div>`).join('') + '</div>' : '<p class="ayuda">Sin movimientos todavía.</p>'}
+    </section>
+
+    <section class="op-caja">
+      <p class="aj-et">Visitas</p>
+      ${prox.length ? prox.map(filaCita).join('') : '<p class="ayuda">No hay visitas próximas.</p>'}
+      <button type="button" class="aj-btn" data-op-agendar="${o.id}">📅 Agendar visita</button>
+      ${pasadas.length ? '<p class="aj-et" style="margin-top:14px">Últimas visitas</p>' + pasadas.map(filaCita).join('') : ''}
+    </section>
+    <button type="button" class="aj-sec" data-op-editar="${o.id}">✏️ Editar datos de la óptica</button>`;
+  $('#ficha').hidden = false;
+}
+const fechaCorta = iso => { const d = desdeISO(iso); return d.getDate() + ' ' + MESES[d.getMonth()].toLowerCase() + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); };
+function abrirMov(tipo) {
+  movTipo = tipo;
+  $('#movTit').textContent = tipo === 'abono' ? '¿Cuánto cobró? ($)' : '¿Por cuánto fue la venta a crédito? ($)';
+  $('#mov_monto').value = ''; $('#mov_nota').value = '';
+  $('#movForm').hidden = false; $('#mov_monto').focus();
+}
+function registrarMov(opticaId, monto, tipo, nota, citaId) {
+  guardarTabla('abonos', { id: nuevoId(), opticaId, fecha: hoyISO(), monto: Math.round(monto * 100) / 100, tipo, nota: nota || '', citaId: citaId || '', creado: new Date().toISOString() });
+}
+$('#fichaCont').addEventListener('click', e => {
+  const m = e.target.closest('[data-mov]'); if (m) { abrirMov(m.dataset.mov); return; }
+  if (e.target.closest('#movCancelar')) { $('#movForm').hidden = true; return; }
+  if (e.target.closest('#movGuardar')) {
+    const v = Number($('#mov_monto').value);
+    if (!(v > 0)) { toast('Escriba el valor.'); return; }
+    registrarMov(fichaId, movTipo === 'abono' ? -v : v, movTipo, $('#mov_nota').value.trim());
+    toast(movTipo === 'abono' ? 'Cobro registrado' : 'Venta a crédito registrada'); verFicha(fichaId); return;
+  }
+  const ag = e.target.closest('[data-op-agendar]');
+  if (ag) { const o = tablas.opticas.find(x => x.id === ag.dataset.opAgendar); abrir(null); ponerOpticaEnCita(o, true); return; }
+  const ed = e.target.closest('[data-op-editar]');
+  if (ed) { abrirOptica(tablas.opticas.find(x => x.id === ed.dataset.opEditar)); return; }
+  alTocar(e);
+});
+$('#fichaCerrar').addEventListener('click', () => { $('#ficha').hidden = true; fichaId = null; });
+
+/* Formulario de óptica */
+function pintarDeuda() {
+  document.querySelectorAll('#op_deuda button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.d === 'si') === opDeuda)));
+  $('#campoSaldo').hidden = !opDeuda;
+}
+function pintarUbic() {
+  const u = opUbic;
+  $('#ubicEstado').textContent = u && u.lat ? `✓ Ubicación guardada (${Number(u.lat).toFixed(5)}, ${Number(u.lng).toFixed(5)})`
+    : u && u.mapsUrl ? '✓ Enlace de Google Maps guardado' : u && u.direccion ? '✓ Se buscará la dirección en Google Maps' : 'Sin ubicación todavía.';
+}
+function abrirOptica(o) {
+  opEditId = o ? o.id : null;
+  $('#opTit').textContent = o ? 'Editar óptica' : 'Nueva óptica';
+  $('#op_nombre').value = o ? o.nombre : ''; $('#op_dueno').value = o ? (o.dueno || '') : '';
+  $('#op_tel').value = o ? (o.telefono || '') : ''; $('#op_ciudad').value = o ? (o.ciudad || '') : '';
+  $('#op_ref').value = o ? (o.referencia || '') : ''; $('#op_mapa').value = o ? (o.direccion || o.mapsUrl || '') : '';
+  opUbic = o ? { lat: o.lat || '', lng: o.lng || '', mapsUrl: o.mapsUrl || '', direccion: o.direccion || '' } : null;
+  const s = o ? saldoDe(o) : 0;
+  opDeuda = s > 0; $('#op_saldo').value = s > 0 ? s : '';
+  $('#opErr').textContent = '';
+  const b = $('#opBorrar'); b.hidden = !o; b.classList.remove('seguro'); b.textContent = '🗑 Borrar esta óptica';
+  pintarDeuda(); pintarUbic();
+  $('#formOptica').hidden = false; $('#formOptica').scrollTop = 0;
+}
+function leerMapa(t) {
+  t = t.trim();
+  if (!t) return null;
+  const pats = [/@(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/, /[?&](?:q|query|ll|destination|center)=(-?\d{1,2}\.\d+)(?:,|%2C)\s*(-?\d{1,3}\.\d+)/i,
+    /!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/, /^(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)$/];
+  for (const p of pats) { const m = t.match(p); if (m) return { lat: m[1], lng: m[2], mapsUrl: '', direccion: '' }; }
+  if (/^https?:\/\//i.test(t)) return { lat: '', lng: '', mapsUrl: t, direccion: '' };
+  return { lat: '', lng: '', mapsUrl: '', direccion: t };
+}
+$('#op_mapa').addEventListener('change', () => { const u = leerMapa($('#op_mapa').value); if (u) { opUbic = u; pintarUbic(); } });
+$('#btnGps').addEventListener('click', () => {
+  if (!navigator.geolocation) { toast('Este celular no permite leer la ubicación.'); return; }
+  const b = $('#btnGps'); b.disabled = true; b.textContent = 'Buscando su ubicación…';
+  navigator.geolocation.getCurrentPosition(p => {
+    opUbic = { ...(opUbic || {}), lat: p.coords.latitude.toFixed(6), lng: p.coords.longitude.toFixed(6), mapsUrl: '' };
+    pintarUbic(); b.disabled = false; b.textContent = '📍 Usar mi ubicación actual'; toast('Ubicación guardada');
+  }, err => {
+    b.disabled = false; b.textContent = '📍 Usar mi ubicación actual';
+    toast(err.code === 1 ? 'Dé permiso de ubicación a la agenda para usar el GPS.' : 'No se pudo leer el GPS. Intente afuera o pegue un enlace de Maps.', 5000);
+  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+});
+document.querySelectorAll('#op_deuda button').forEach(b => b.addEventListener('click', () => { opDeuda = b.dataset.d === 'si'; pintarDeuda(); }));
+$('#opCancelar').addEventListener('click', () => { $('#formOptica').hidden = true; });
+$('#formOpticaForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = id => $(id).value.trim();
+  if (!v('#op_nombre')) { $('#opErr').textContent = 'Falta el nombre de la óptica.'; return; }
+  if (opDeuda && !(Number(v('#op_saldo')) > 0)) { $('#opErr').textContent = 'Escriba cuánto debe, o toque «No».'; return; }
+  const u = leerMapa(v('#op_mapa'));
+  if (u && !(opUbic && opUbic.lat && u.direccion)) opUbic = u.direccion && opUbic && opUbic.lat ? { ...opUbic, direccion: u.direccion } : u;
+  const previa = tablas.opticas.find(x => x.id === opEditId);
+  const o = { id: opEditId || nuevoId(), nombre: v('#op_nombre'), dueno: v('#op_dueno'), telefono: v('#op_tel'), ciudad: v('#op_ciudad'),
+    referencia: v('#op_ref'), lat: opUbic ? opUbic.lat || '' : '', lng: opUbic ? opUbic.lng || '' : '', mapsUrl: opUbic ? opUbic.mapsUrl || '' : '',
+    direccion: opUbic ? opUbic.direccion || '' : '', creado: previa ? previa.creado : new Date().toISOString() };
+  guardarTabla('opticas', o, true);
+  const meta = opDeuda ? Math.round(Number(v('#op_saldo')) * 100) / 100 : 0, actual = previa ? saldoDe(previa) : 0;
+  if (Math.abs(meta - actual) >= 0.01) registrarMov(o.id, meta - actual, previa ? 'ajuste' : 'inicial', '');
+  else enviarPendientes();
+  $('#formOptica').hidden = true; toast('Óptica guardada');
+  if (!$('#ficha').hidden || previa) verFicha(o.id); else render();
+});
+$('#opBorrar').addEventListener('click', () => {
+  const b = $('#opBorrar');
+  if (!b.classList.contains('seguro')) { b.classList.add('seguro'); b.textContent = '¿Seguro? Toque otra vez para borrar'; setTimeout(() => { b.classList.remove('seguro'); b.textContent = '🗑 Borrar esta óptica'; }, 5000); return; }
+  const id = opEditId;
+  tablas.abonos.filter(a => a.opticaId === id).forEach(a => borrarTabla('abonos', a.id, true));
+  borrarTabla('opticas', id);
+  $('#formOptica').hidden = true; $('#ficha').hidden = true; fichaId = null; toast('Óptica borrada'); render();
+});
+
+/* Óptica dentro de la cita */
+function ponerOpticaEnCita(o, rellenar) {
+  opticaSel = o ? o.id : '';
+  $('#f_optica').value = o ? o.nombre : '';
+  $('#opticaEstado').textContent = o ? `✓ Vinculada${tieneUbic(o) ? ' · tiene ubicación' : ''}${saldoDe(o) > 0 ? ' · debe ' + money(saldoDe(o)) : ''}` : '';
+  if (o && rellenar) {
+    if (!$('#f_cliente').value.trim()) $('#f_cliente').value = o.dueno ? `${o.nombre} - ${o.dueno}` : o.nombre;
+    if (!$('#f_ciudad').value.trim() && o.ciudad) $('#f_ciudad').value = o.ciudad;
+  }
+}
+$('#f_optica').addEventListener('input', () => {
+  const n = normalTxt($('#f_optica').value);
+  const o = n ? tablas.opticas.find(x => normalTxt(x.nombre) === n) : null;
+  if (o) ponerOpticaEnCita(o, true); else { opticaSel = ''; $('#opticaEstado').textContent = n ? 'No está en sus ópticas (se guarda solo como nombre).' : ''; }
+});
+
+/* Cobro al marcar «Ya fui» */
+function pedirCobro(c, o) {
+  cobroCita = { c, o };
+  $('#cobroTxt').textContent = `¿Cuánto le cobró a ${o.nombre}?`;
+  $('#cobro_monto').value = c.monto || '';
+  $('#cobroSheet').hidden = false;
+}
+async function terminarCobro(cobrado) {
+  const { c, o } = cobroCita; cobroCita = null; $('#cobroSheet').hidden = true;
+  if (cobrado > 0) registrarMov(o.id, -cobrado, 'abono', 'Visita del ' + fechaCorta(c.fecha), c.id);
+  await guardarCita({ ...c, estado: 'hecho', opticaId: c.opticaId || o.id });
+  toast(cobrado > 0 ? `Cobro de ${money(cobrado)} registrado` : 'Marcada como visitada');
+  if (fichaId) verFicha(fichaId);
+}
+$('#cobroOk').addEventListener('click', () => { const v = Number($('#cobro_monto').value); if (!(v > 0)) { toast('Escriba el valor cobrado, o toque «No cobré».'); return; } terminarCobro(v); });
+$('#cobroNo').addEventListener('click', () => terminarCobro(0));
+$('#cobroCancelar').addEventListener('click', () => { cobroCita = null; $('#cobroSheet').hidden = true; });
+
+/* Ruta del día en Google Maps */
+function urlRutaHoy() {
+  const paradas = citas.filter(c => c.fecha === hoyISO() && pend(c)).sort(orden).map(opticaDe).filter(tieneUbic);
+  const unicas = paradas.filter((o, i) => paradas.findIndex(x => x.id === o.id) === i);
+  if (!unicas.length) return '';
+  const fin = unicas[unicas.length - 1], medio = unicas.slice(0, -1).slice(0, 9);
+  return 'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=' + encodeURIComponent(destino(fin)) +
+    (medio.length ? '&waypoints=' + encodeURIComponent(medio.map(destino).join('|')) : '');
+}
+
 function abrir(c) {
   editId = c ? c.id : null;
   $('#tituloForm').textContent = c ? 'Cambiar cita' : 'Nueva cita';
@@ -1052,6 +1472,7 @@ function abrir(c) {
   $('#f_merc').value = c ? (c.mercaderia || '') : '';
   $('#f_monto').value = c && c.monto ? c.monto : '';
   $('#f_nota').value = c ? (c.nota || '') : '';
+  ponerOpticaEnCita(c ? opticaDe(c) : null, false);
   $('#err').textContent = '';
   $('#f_voz').value = '';
   $('#cajaVoz').hidden = !!c;
@@ -1074,8 +1495,10 @@ $('#form').addEventListener('submit', async e => {
     id: editId || nuevoId(), fecha: v('#f_fecha'), hora: v('#f_hora'), cliente: v('#f_cliente'), ciudad: v('#f_ciudad'),
     tipo: tipoSel, mercaderia: tipoSel === 'venta' ? v('#f_merc') : '', monto: tipoSel === 'cobro' ? Math.round(Number(v('#f_monto')) * 100) / 100 : 0,
     nota: v('#f_nota'), estado: previa ? previa.estado : 'pendiente', creado: previa ? previa.creado : new Date().toISOString(),
-    calId: previa ? (previa.calId || '') : '', eventId: previa ? (previa.eventId || '') : ''
+    calId: previa ? (previa.calId || '') : '', eventId: previa ? (previa.eventId || '') : '',
+    opticaId: opticaSel || ''
   };
+  if (!c.opticaId) { const o = opticaDe(c); if (o) c.opticaId = o.id; }
   const btn = $('#btnGuardar'); btn.disabled = true; btn.textContent = 'Guardando…';
   try {
     await guardarCita(c); cerrar(); toast(navigator.onLine === false ? 'Cita guardada en el celular. Se enviará cuando haya señal.' : 'Cita guardada. La alarma se pone sola.');
@@ -1282,7 +1705,7 @@ function interpretarLocal(texto) {
   }
 
   // 8) Cliente: los ya usados; si no, el nombre después de "a", "con", "donde", "señora"…
-  const clientes = [...new Set(citas.map(c => c.cliente).filter(Boolean))].sort((x, y) => y.length - x.length);
+  const clientes = [...new Set([...tablas.opticas.map(o => o.nombre), ...citas.map(c => c.cliente)].filter(Boolean))].sort((x, y) => y.length - x.length);
   const planoTodo = ' ' + t.join(' ') + ' ';
   for (const c of clientes) {
     const corto = sinTildes(c.replace(/\s*\(.*\)\s*$/, '').replace(/\s*-.*$/, '').toLowerCase()).replace(/[^\w ]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -1329,6 +1752,7 @@ function completarNota(d, texto) {
 }
 
 function aplicarDictado(r) {
+  setTimeout(() => { if (!opticaSel) { const o = opticaDe({ cliente: $('#f_cliente').value }); if (o) ponerOpticaEnCita(o, true); } }, 0);
   if (r.fecha) $('#f_fecha').value = r.fecha;
   if (r.hora) $('#f_hora').value = r.hora;
   if (r.cliente) $('#f_cliente').value = r.cliente;
@@ -1448,6 +1872,9 @@ $('#btnBorrar').addEventListener('click', async () => {
 
 /* ---------- acciones de cada cita ---------- */
 async function alTocar(e) {
+  const fo = e.target.closest('[data-opf]'); if (fo) { filtroOp = fo.dataset.opf; render(); return; }
+  if (e.target.closest('[data-op-importar]')) { importarClientes(); return; }
+  const vo = e.target.closest('[data-op-ver]'); if (vo) { verFicha(vo.dataset.opVer); return; }
   const bp = e.target.closest('button[data-p]');
   if (bp) { periodo = bp.dataset.p; despl = 0; render(); return; }
   const bn = e.target.closest('button[data-nav]');
@@ -1469,6 +1896,9 @@ async function alTocar(e) {
   if (b.dataset.a === 'editar') { porBorrar = null; $('#detalle').hidden = true; abrir(c); return; }
   if (b.dataset.a === 'marcar') {
     porBorrar = null;
+    const o = opticaDe(c);
+    if (c.estado !== 'hecho' && c.tipo === 'cobro' && o) { pedirCobro(c, o); return; }
+    if (c.estado === 'hecho') tablas.abonos.filter(a => a.citaId === c.id).forEach(a => borrarTabla('abonos', a.id, true));
     try { await guardarCita({ ...c, estado: c.estado === 'hecho' ? 'pendiente' : 'hecho' }); toast(c.estado === 'hecho' ? 'Volvió a pendiente' : 'Marcada como visitada'); }
     catch (err) { toast('No se pudo guardar. Revise el internet.'); }
     return;
@@ -1489,7 +1919,7 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
   render(); window.scrollTo(0, 0);
 }));
 document.querySelectorAll('.tipos button').forEach(b => b.addEventListener('click', () => elegirTipo(b.dataset.t)));
-$('#nueva').addEventListener('click', () => { abrir(null); if (vista === 'mes' && foco && foco >= hoyISO()) $('#f_fecha').value = foco; });
+$('#nueva').addEventListener('click', () => { if (vista === 'opticas') { abrirOptica(null); return; } abrir(null); if (vista === 'mes' && foco && foco >= hoyISO()) $('#f_fecha').value = foco; });
 $('#btnCancelar').addEventListener('click', cerrar);
 $('#buscar').addEventListener('input', render);
 
