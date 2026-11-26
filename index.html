@@ -286,6 +286,12 @@ h1{font-size:20px;font-weight:600}
 .logo{width:56px;height:56px;border-radius:14px;box-shadow:none;border:1px solid var(--line);background:#0c0c0d;object-fit:cover}
 #btnLetra{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:500;min-height:47px;min-width:58px}
 #btnLetra[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.top-btns{display:flex;gap:8px;align-items:center;flex:none}
+#btnRecargar{flex:none;min-height:47px;min-width:58px;padding:4px 8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+#btnRecargar svg{width:22px;height:22px}
+#btnRecargar small{font-size:10px;line-height:1}
+#btnRecargar.girando svg{animation:girar .8s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
 nav{background:var(--soft);border-radius:16px;padding:4px;gap:4px;margin-top:16px}
 nav button{border:0;border-radius:12px;color:var(--muted);font-weight:500;min-height:50px}
 nav button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
@@ -524,7 +530,8 @@ h2{letter-spacing:.1em}
 <header>
   <div class="top">
     <div class="marca"><img class="logo" src="icon-192.png?v=2" alt="MOD" width="56" height="56"><div><h1><span class="acento">Agenda</span> de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
-    <button id="btnLetra" aria-pressed="false" aria-label="Letra más grande">A<span>A</span></button>
+    <div class="top-btns"><button id="btnRecargar" aria-label="Actualizar la agenda" title="Actualizar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><small>Actualizar</small></button>
+    <button id="btnLetra" aria-pressed="false" aria-label="Letra más grande">A<span>A</span></button></div>
   </div>
   <nav>
     <button id="v_hoy" data-v="hoy" aria-pressed="true">Hoy</button>
@@ -2210,6 +2217,15 @@ function ponerLetra(g) {
   try { localStorage.setItem('agenda_letra', g ? '1' : ''); } catch (e) {}
 }
 try { if (localStorage.getItem('agenda_letra')) ponerLetra(true); } catch (e) {}
+$('#btnRecargar').addEventListener('click', async () => {
+  const b = $('#btnRecargar'); if (b.classList.contains('girando')) return;
+  b.classList.add('girando'); toast('Actualizando…', 3000);
+  const espera = (pr, ms) => Promise.race([pr, new Promise(r => setTimeout(r, ms))]);
+  try { if (cfg) await espera(enviarPendientes(), 6000); } catch (e) {}
+  try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (reg) await espera(reg.update(), 4000); } catch (e) {}
+  try { sessionStorage.setItem('agenda_bienvenida', '1'); } catch (e) {}
+  location.reload(); // la página siempre se pide a internet primero: trae la versión nueva y los datos frescos
+});
 $('#btnLetra').addEventListener('click', () => { const g = !document.documentElement.classList.contains('grande'); ponerLetra(g); toast(g ? 'Letra grande' : 'Letra normal', 1500); });
 function marcarRapida() {
   const v = $('#f_fecha').value;
