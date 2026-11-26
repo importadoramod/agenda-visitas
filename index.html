@@ -421,6 +421,11 @@ header{background:transparent;border-bottom:0}
 .mapa-pin svg{width:100%;height:100%}
 .btnlink svg{width:18px;height:18px;margin-right:6px}
 .acc a.btnlink.llegar{background:linear-gradient(90deg,var(--coral),var(--coral2));border:0;color:#fff}
+.acc a.btnlink.contacto{flex:1 1 40%;font-weight:600}
+.acc a.btnlink.contacto.wa{color:#25d366;border-color:rgba(37,211,102,.45)}
+.acc a.btnlink.contacto svg{width:20px;height:20px}
+.acc .sin-tel{flex-basis:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line);border-radius:14px;background:transparent;color:var(--muted,#999);font-size:15px}
+.acc .sin-tel svg{width:18px;height:18px}
 /* semana y mini calendario */
 .semana{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:16px}
 .dia-s{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:14px;border:1px solid var(--line);background:var(--vidrio);color:var(--ink);min-height:62px}
@@ -1109,6 +1114,11 @@ function miniCalHTML() {
   return h + '</div></div>';
 }
 
+function contactoCita(c, o) {
+  const tel = (o && o.telefono) || c.telefono || '';
+  if (telDigitos(tel).length >= 7) return `<a class="btnlink contacto" href="tel:${telDigitos(tel)}">${ICO.tel} Llamar</a><a class="btnlink contacto wa" href="${esc(urlWhats(tel))}" target="_blank" rel="noopener">${ICO.wa} WhatsApp</a>`;
+  return o ? `<button type="button" class="sin-tel" data-op-tel="${o.id}">${ICO.tel} Agregar teléfono para Llamar y WhatsApp</button>` : '';
+}
 function card(c) {
   const det = c.tipo === 'venta'
     ? `<div class="cd">Llevar: <span class="merc">${esc(c.mercaderia)}</span></div>`
@@ -1127,6 +1137,7 @@ function card(c) {
     ${c.nota ? `<div class="cno">Nota: ${esc(c.nota)}</div>` : ''}
     <div class="acc">
       ${o && tieneUbic(o) ? `<a class="btnlink llegar" href="${esc(urlLlegar(o))}" target="_blank" rel="noopener">${ICO.pin} Cómo llegar</a>` : ''}
+      ${contactoCita(c, o)}
       ${c.eventId ? `<span class="encal">📅 Alarma puesta en Google Calendar</span>` : c._pend ? `<span class="encal">⏳ Guardando…</span>` : ''}
       <button class="ok" data-a="marcar" data-id="${c.id}">${c.estado === 'hecho' ? '↩ No fui' : '✓ Ya fui'}</button>
       <button data-a="editar" data-id="${c.id}">✏️ Cambiar</button>
@@ -2120,6 +2131,7 @@ async function alTocar(e) {
   }
   const fo = e.target.closest('[data-opf]'); if (fo) { filtroOp = fo.dataset.opf; render(); return; }
   if (e.target.closest('[data-op-importar]')) { importarClientes(); return; }
+  const ot = e.target.closest('[data-op-tel]'); if (ot) { abrirOptica(tablas.opticas.find(x => x.id === ot.dataset.opTel)); setTimeout(() => $('#op_tel').focus(), 150); return; }
   const vo = e.target.closest('[data-op-ver]'); if (vo) { verFicha(vo.dataset.opVer); return; }
   const bp = e.target.closest('button[data-p]');
   if (bp) { periodo = bp.dataset.p; despl = 0; render(); return; }
