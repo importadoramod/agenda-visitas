@@ -568,6 +568,12 @@ h2{letter-spacing:.1em}
     </section>
 
     <section class="aj-bloque">
+      <p class="aj-et">📲 Conectar otro celular o computadora</p>
+      <p class="ayuda">Envíe este enlace al otro aparato y ábralo allí una sola vez. Lleva la clave adentro: no lo comparta con extraños.</p>
+      <div class="aj-cuenta"><button type="button" id="enlaceCopiar">Copiar enlace</button><button type="button" id="enlaceWa">Enviar por WhatsApp</button></div>
+    </section>
+
+    <section class="aj-bloque">
       <p class="aj-et">¿Dónde se anotan las citas?</p>
       <p class="ayuda" id="calEstado">Buscando sus calendarios…</p>
       <div id="calLista" class="opciones"></div>
@@ -969,6 +975,9 @@ async function copiar(txt, boton) {
   catch (e) { toast('Mantenga el dedo sobre el correo para copiarlo', 3000); }
 }
 $('#copiarCuenta').addEventListener('click', e => copiar(cuenta, e.currentTarget));
+const enlaceAparato = () => cfg ? location.origin + location.pathname + '#s=' + encodeURIComponent(cfg.url) + '&t=' + encodeURIComponent(cfg.token) : '';
+$('#enlaceCopiar').addEventListener('click', e => copiar(enlaceAparato(), e.currentTarget));
+$('#enlaceWa').addEventListener('click', () => window.open('https://wa.me/?text=' + encodeURIComponent('Agenda de Visitas — abra este enlace una sola vez: ' + enlaceAparato()), '_blank'));
 document.querySelectorAll('.copiarCuenta2').forEach(b => b.addEventListener('click', e => copiar(cuenta, e.currentTarget)));
 
 async function abrirAjustes() {
