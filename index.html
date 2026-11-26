@@ -433,6 +433,23 @@ header{background:transparent;border-bottom:0}
 .card.cita .acc button{min-height:44px;font-size:15px;border-radius:12px}
 .card.cita .acc .sin-tel{flex:2 1 0;min-height:42px;font-size:13px}
 .card.cita .acc .encal{flex-basis:100%;font-size:13px}
+.mes-stats{margin:16px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px}
+.ms-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ms-cab b{font-family:var(--f-head,inherit);font-size:18px}
+.ms-cab button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:22px;line-height:1}
+.ms-cab button:disabled{opacity:.3}
+.ms-datos{display:flex;gap:8px}
+.ms-datos div{flex:1;background:var(--soft);border-radius:14px;padding:10px;min-width:0}
+.ms-datos small{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ms-datos b{font-size:20px;white-space:nowrap}
+.ms-datos b.vta{color:var(--coral)}
+.ms-et{margin:14px 0 4px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ms-fila{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:15px;align-items:center}
+.ms-fila span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-fila span+span{text-align:center}
+.ms-fila b{text-align:right}
+.ms-tit{font-size:12px;color:var(--muted);text-transform:uppercase;border-top:0}
+#venta_pago{margin:10px 0}
 /* Botón Nueva cita: pastilla pequeña abajo a la derecha */
 #nueva{left:auto;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 #nueva span{display:flex;align-items:center;justify-content:center;max-width:none;margin:0!important;width:58px;height:58px;min-height:0;line-height:1;padding:0;font-size:34px;font-weight:400;border-radius:50%}
@@ -656,6 +673,9 @@ h2{letter-spacing:.1em}
     <input id="op_nombre" autocomplete="off">
     <label for="op_dueno">Nombre del dueño</label>
     <input id="op_dueno" autocomplete="off">
+    <label for="op_vend">Vendedor de MOD que la atiende</label>
+    <input id="op_vend" list="vendedores" autocomplete="off" placeholder="Ej.: Carlos">
+    <datalist id="vendedores"></datalist>
     <label for="op_tel">Teléfono o celular</label>
     <input id="op_tel" type="tel" inputmode="tel" autocomplete="off">
     <label for="op_ciudad">Ciudad o sector</label>
@@ -683,6 +703,13 @@ h2{letter-spacing:.1em}
   <input id="cobro_monto" type="number" inputmode="decimal" step="0.01" min="0">
   <div class="botones"><button type="button" id="cobroNo">No cobré</button><button type="button" id="cobroOk">Guardar cobro</button></div>
   <button type="button" id="cobroCancelar" class="aj-sec">Cancelar</button>
+</div></div>
+<div id="ventaSheet" class="hoja chica" hidden><div class="hojaIn">
+  <h3 id="ventaTxt">¿Cuánto vendió?</h3>
+  <input id="venta_monto" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Valor de la venta ($)">
+  <div class="tipos" id="venta_pago"><button type="button" data-p="contado" aria-pressed="true">De contado</button><button type="button" data-p="venta" aria-pressed="false">A crédito</button></div>
+  <div class="botones"><button type="button" id="ventaNo">No vendí</button><button type="button" id="ventaOk">Guardar venta</button></div>
+  <button type="button" id="ventaCancelar" class="aj-sec">Cancelar</button>
 </div></div>
 <div id="detalle" class="hoja" hidden><div class="hojaIn"><button id="detCerrar">‹ Volver al calendario</button><div id="detCard"></div></div></div>
 <div id="alerta" role="alert" hidden><div><span id="alertaTxt"></span><button id="alertaOk">Entendido</button></div></div>
@@ -1178,7 +1205,7 @@ function render() {
     html += `<p class="saludo">${hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches'} 👋</p>
       <p class="frase">${np === 0 ? 'Hoy no tiene visitas pendientes.' : `Hoy tiene <b style="color:var(--ink)">${np} ${np === 1 ? 'visita' : 'visitas'}</b> por hacer.`}
       ${cobrar > 0 ? ` Debe cobrar <b>${money(cobrar)}</b>.` : ''}</p>`;
-    html += semanaHTML() + miniCalHTML();
+    html += semanaHTML() + miniCalHTML() + resumenMesHTML();
     const ruta = urlRutaHoy();
     if (ruta) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">${ICO.pin} Ver la ruta de hoy en Google Maps</a>`;
     if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2><div class="lista">' + atr.map(card).join('') + '</div>';
@@ -1471,7 +1498,40 @@ function opticaDe(c) {
   return pm >= 2 && !empate ? mejor : null;
 }
 const movsDe = o => tablas.abonos.filter(a => a.opticaId === o.id).sort((a, b) => (b.fecha + (b.creado || '')).localeCompare(a.fecha + (a.creado || '')));
-const saldoDe = o => Math.round(movsDe(o).reduce((s, a) => s + Number(a.monto || 0), 0) * 100) / 100;
+const saldoDe = o => Math.round(movsDe(o).reduce((s, a) => s + (a.tipo === 'contado' ? 0 : Number(a.monto || 0)), 0) * 100) / 100;
+/* ---------- Estadísticas: visitas y ventas por mes, por óptica y por vendedor ---------- */
+const SIN_VEND = 'Sin vendedor';
+const vendedores = () => [...new Set(tablas.opticas.map(o => String(o.vendedor || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+const esVenta = a => a.tipo === 'venta' || a.tipo === 'contado';
+const mesDe = iso => String(iso || '').slice(0, 7);
+function estadisticas(mes, filtro) { // filtro(opticaId|null) → incluir
+  const ok = id => !filtro || filtro(id);
+  const vis = citas.filter(c => c.estado === 'hecho' && mesDe(c.fecha) === mes).filter(c => { const o = opticaDe(c); return ok(o ? o.id : null); });
+  const ven = tablas.abonos.filter(a => esVenta(a) && mesDe(a.fecha) === mes && ok(a.opticaId || null));
+  const cob = tablas.abonos.filter(a => a.tipo === 'abono' && mesDe(a.fecha) === mes && ok(a.opticaId || null));
+  const suma = l => Math.round(l.reduce((s, a) => s + Math.abs(Number(a.monto || 0)), 0) * 100) / 100;
+  return { visitas: vis.length, ventas: suma(ven), nVentas: ven.length, cobrado: suma(cob), listaVis: vis, listaVen: ven };
+}
+const vendedorDeId = id => { const o = id && tablas.opticas.find(x => x.id === id); return (o && String(o.vendedor || '').trim()) || SIN_VEND; };
+function porVendedor(mes) {
+  const e = estadisticas(mes), m = new Map();
+  const fila = n => { if (!m.has(n)) m.set(n, { n, visitas: 0, ventas: 0 }); return m.get(n); };
+  e.listaVis.forEach(c => { const o = opticaDe(c); fila(vendedorDeId(o && o.id)).visitas++; });
+  e.listaVen.forEach(a => { fila(vendedorDeId(a.opticaId)).ventas += Math.abs(Number(a.monto || 0)); });
+  return [...m.values()].sort((a, b) => b.ventas - a.ventas || b.visitas - a.visitas);
+}
+const nombreMes = mes => { const [y, mm] = mes.split('-').map(Number); return MESES_L[mm - 1].replace(/^./, x => x.toUpperCase()) + (y !== new Date().getFullYear() ? ' ' + y : ''); };
+const mesMas = (mes, n) => { const [y, mm] = mes.split('-').map(Number); const d = new Date(y, mm - 1 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+let mesStats = null;
+function resumenMesHTML() {
+  const actual = mesDe(hoyISO()); if (!mesStats) mesStats = actual;
+  const e = estadisticas(mesStats), pv = porVendedor(mesStats);
+  return `<section class="mes-stats">
+    <div class="ms-cab"><button type="button" data-ms="-1" aria-label="Mes anterior">‹</button><b>${nombreMes(mesStats)}</b><button type="button" data-ms="1" aria-label="Mes siguiente" ${mesStats >= actual ? 'disabled' : ''}>›</button></div>
+    <div class="ms-datos"><div><small>Visitas hechas</small><b>${e.visitas}</b></div><div><small>Ventas</small><b class="vta">${money(e.ventas)}</b></div><div><small>Cobrado</small><b>${money(e.cobrado)}</b></div></div>
+    ${pv.length ? '<p class="ms-et">Por vendedor de MOD</p>' + pv.slice(0, 5).map(f => `<div class="ms-fila"><span>${esc(f.n)}</span><span>${f.visitas} ${f.visitas === 1 ? 'visita' : 'visitas'}</span><b>${money(f.ventas)}</b></div>`).join('') : '<p class="ayuda">Todavía no hay visitas hechas ni ventas este mes.</p>'}
+  </section>`;
+}
 const totalPorCobrar = () => tablas.opticas.reduce((s, o) => s + Math.max(0, saldoDe(o)), 0);
 const tieneUbic = o => !!(o && ((o.lat && o.lng) || o.mapsUrl || o.direccion));
 function urlLlegar(o) {
@@ -1497,7 +1557,7 @@ function opticasHTML() {
   const q = normalTxt($('#buscar').value);
   const todas = tablas.opticas.slice().sort((a, b) => String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es'));
   const conDeuda = todas.filter(o => saldoDe(o) > 0);
-  const lista = (filtroOp === 'deuda' ? conDeuda : todas).filter(o => !q || normalTxt([o.nombre, o.dueno, o.ciudad, o.referencia].join(' ')).includes(q));
+  const lista = (filtroOp === 'deuda' ? conDeuda : todas).filter(o => !q || normalTxt([o.nombre, o.dueno, o.ciudad, o.referencia, o.vendedor].join(' ')).includes(q));
   let h = `<div class="cifras">
       <div class="dato"><small>Ópticas</small><b>${todas.length}</b></div>
       <div class="dato"><small>Total por cobrar</small><b class="cobro">${money(totalPorCobrar())}</b>${sparkline()}</div></div>
@@ -1508,7 +1568,7 @@ function opticasHTML() {
   if (!lista.length) h += `<p class="vacio">${todas.length ? 'No hay ópticas con esos datos.' : 'Todavía no hay ópticas. Toque <b>＋ Nueva óptica</b> para anotar la primera.'}</p>`;
   h += '<div class="lista">' + lista.map(o => `<article class="card op">
       <button class="op-cab" data-op-ver="${o.id}"><span class="cn">${esc(o.nombre)}</span>${pildoraDeuda(o)}</button>
-      <div class="op-sub">${ICO.pin}<span>${esc([o.dueno, o.ciudad].filter(Boolean).join(' · ') || 'Sin datos')}</span></div>
+      <div class="op-sub">${ICO.pin}<span>${esc([o.dueno, o.ciudad].filter(Boolean).join(' · ') || 'Sin datos')}${o.vendedor ? ' · 🧑‍💼 ' + esc(o.vendedor) : ''}</span></div>
       ${accionesRedondas(o)}
       <button class="op-ver" data-op-ver="${o.id}">Ver ficha ›</button></article>`).join('') + '</div>';
   return h;
@@ -1540,19 +1600,21 @@ function verFicha(id) {
   const vis = citas.filter(c => opticaDe(c) && opticaDe(c).id === o.id);
   const prox = vis.filter(c => pend(c) && c.fecha >= h0).sort(orden), pasadas = vis.filter(c => !pend(c) || c.fecha < h0).sort((a, b) => orden(b, a)).slice(0, 6);
   const movs = movsDe(o), s = saldoDe(o);
-  const etq = { inicial: 'Saldo inicial', ajuste: 'Ajuste de saldo', abono: 'Cobro / abono', venta: 'Venta a crédito' };
+  const etq = { inicial: 'Saldo inicial', ajuste: 'Ajuste de saldo', abono: 'Cobro / abono', venta: 'Venta a crédito', contado: 'Venta de contado' };
   $('#fichaCont').innerHTML = `
     <h3 class="op-tit">${esc(o.nombre)}</h3>
     ${o.dueno ? `<p class="op-lin">👤 ${esc(o.dueno)}</p>` : ''}
+    <p class="op-lin">🧑‍💼 Vendedor MOD: <b>${esc(o.vendedor || 'sin asignar')}</b></p>
     ${o.telefono ? `<p class="op-lin">📞 ${esc(o.telefono)}</p>` : ''}
     <p class="op-lin">📍 ${esc([o.direccion, o.ciudad].filter(Boolean).join(', ') || 'Sin dirección')}${o.lat && o.lng ? ' <small>(ubicación GPS guardada)</small>' : ''}</p>
     ${o.referencia ? `<p class="op-lin">🔎 ${esc(o.referencia)}</p>` : ''}
     <div class="acc op-acc">${botonesContacto(o) || '<span class="encal">Agregue teléfono y ubicación con «Editar datos».</span>'}</div>
 
+    ${historialOptica(o)}
     <section class="op-caja">
       <p class="aj-et">Cuentas por cobrar</p>
       <p class="op-saldo ${s > 0 ? 'debe' : ''}">${s > 0 ? 'Debe ' + money(s) : 'Sin deuda'}</p>
-      <div class="rapidas"><button type="button" data-mov="abono">− Registrar cobro</button><button type="button" data-mov="venta">＋ Venta a crédito</button></div>
+      <div class="rapidas"><button type="button" data-mov="abono">− Registrar cobro</button><button type="button" data-mov="venta">＋ Venta a crédito</button><button type="button" data-mov="contado">＋ Venta de contado</button></div>
       <div id="movForm" hidden>
         <label for="mov_monto" id="movTit">Valor</label>
         <input id="mov_monto" type="number" inputmode="decimal" step="0.01" min="0">
@@ -1571,10 +1633,23 @@ function verFicha(id) {
     <button type="button" class="aj-sec" data-op-editar="${o.id}">✏️ Editar datos de la óptica</button>`;
   $('#ficha').hidden = false; alFrente($('#ficha'));
 }
+function historialOptica(o) {
+  const f = id => id === o.id, actual = mesDe(hoyISO());
+  const meses = [0, 1, 2, 3, 4, 5].map(n => mesMas(actual, -n)).map(m => ({ m, ...estadisticas(m, f) }));
+  const anio = String(new Date().getFullYear());
+  const visA = citas.filter(c => c.estado === 'hecho' && c.fecha.startsWith(anio) && opticaDe(c) && opticaDe(c).id === o.id).length;
+  const venA = tablas.abonos.filter(a => a.opticaId === o.id && esVenta(a) && String(a.fecha).startsWith(anio)).reduce((s, a) => s + Math.abs(Number(a.monto || 0)), 0);
+  return `<section class="op-caja">
+    <p class="aj-et">Visitas y ventas</p>
+    <div class="ms-datos"><div><small>Visitas ${anio}</small><b>${visA}</b></div><div><small>Ventas ${anio}</small><b class="vta">${money(venA)}</b></div></div>
+    <div class="ms-tabla"><div class="ms-fila ms-tit"><span>Mes</span><span>Visitas</span><b>Ventas</b></div>
+    ${meses.map(x => `<div class="ms-fila"><span>${nombreMes(x.m)}</span><span>${x.visitas}</span><b>${x.ventas ? money(x.ventas) : '—'}</b></div>`).join('')}</div>
+  </section>`;
+}
 const fechaCorta = iso => { const d = desdeISO(iso); return d.getDate() + ' ' + MESES[d.getMonth()].toLowerCase() + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); };
 function abrirMov(tipo) {
   movTipo = tipo;
-  $('#movTit').textContent = tipo === 'abono' ? '¿Cuánto cobró? ($)' : '¿Por cuánto fue la venta a crédito? ($)';
+  $('#movTit').textContent = tipo === 'abono' ? '¿Cuánto cobró? ($)' : tipo === 'contado' ? '¿Por cuánto fue la venta de contado? ($)' : '¿Por cuánto fue la venta a crédito? ($)';
   $('#mov_monto').value = ''; $('#mov_nota').value = '';
   $('#movForm').hidden = false; $('#mov_monto').focus();
 }
@@ -1588,7 +1663,7 @@ $('#fichaCont').addEventListener('click', e => {
     const v = Number($('#mov_monto').value);
     if (!(v > 0)) { toast('Escriba el valor.'); return; }
     registrarMov(fichaId, movTipo === 'abono' ? -v : v, movTipo, $('#mov_nota').value.trim());
-    toast(movTipo === 'abono' ? 'Cobro registrado' : 'Venta a crédito registrada'); verFicha(fichaId); return;
+    toast(movTipo === 'abono' ? 'Cobro registrado' : movTipo === 'contado' ? 'Venta de contado registrada' : 'Venta a crédito registrada'); verFicha(fichaId); render(); return;
   }
   const ag = e.target.closest('[data-op-agendar]');
   if (ag) { const o = tablas.opticas.find(x => x.id === ag.dataset.opAgendar); abrir(null); ponerOpticaEnCita(o, true); return; }
@@ -1613,6 +1688,7 @@ function abrirOptica(o) {
   $('#opTit').textContent = o ? 'Editar óptica' : 'Nueva óptica';
   $('#op_nombre').value = o ? o.nombre : ''; $('#op_dueno').value = o ? (o.dueno || '') : '';
   $('#op_tel').value = o ? (o.telefono || '') : ''; $('#op_ciudad').value = o ? (o.ciudad || '') : '';
+  $('#op_vend').value = o ? (o.vendedor || '') : ''; $('#vendedores').innerHTML = vendedores().map(n => `<option value="${esc(n)}">`).join('');
   $('#op_ref').value = o ? (o.referencia || '') : ''; $('#op_mapa').value = o ? (o.direccion || o.mapsUrl || '') : '';
   opUbic = o ? { lat: o.lat || '', lng: o.lng || '', mapsUrl: o.mapsUrl || '', direccion: o.direccion || '' } : null;
   const s = o ? saldoDe(o) : 0;
@@ -1654,7 +1730,7 @@ $('#formOpticaForm').addEventListener('submit', e => {
   if (u && !(opUbic && opUbic.lat && u.direccion)) opUbic = u.direccion && opUbic && opUbic.lat ? { ...opUbic, direccion: u.direccion } : u;
   const previa = tablas.opticas.find(x => x.id === opEditId);
   const o = { id: opEditId || nuevoId(), nombre: v('#op_nombre'), dueno: v('#op_dueno'), telefono: v('#op_tel'), ciudad: v('#op_ciudad'),
-    referencia: v('#op_ref'), lat: opUbic ? opUbic.lat || '' : '', lng: opUbic ? opUbic.lng || '' : '', mapsUrl: opUbic ? opUbic.mapsUrl || '' : '',
+    vendedor: v('#op_vend'), referencia: v('#op_ref'), lat: opUbic ? opUbic.lat || '' : '', lng: opUbic ? opUbic.lng || '' : '', mapsUrl: opUbic ? opUbic.mapsUrl || '' : '',
     direccion: opUbic ? opUbic.direccion || '' : '', creado: previa ? previa.creado : new Date().toISOString() };
   guardarTabla('opticas', o, true);
   if (vincularCita) { const c = citas.find(x => x.id === vincularCita); vincularCita = null; if (c) guardarCita({ ...c, opticaId: o.id }); }
@@ -1707,6 +1783,27 @@ async function terminarCobro(cobrado) {
 $('#cobroOk').addEventListener('click', () => { const v = Number($('#cobro_monto').value); if (!(v > 0)) { toast('Escriba el valor cobrado, o toque «No cobré».'); return; } terminarCobro(v); });
 $('#cobroNo').addEventListener('click', () => terminarCobro(0));
 $('#cobroCancelar').addEventListener('click', () => { cobroCita = null; $('#cobroSheet').hidden = true; });
+
+/* Venta al marcar «Ya fui» */
+let ventaCita = null, ventaPago = 'contado';
+function pedirVenta(c, o) {
+  ventaCita = { c, o }; ventaPago = 'contado';
+  $('#ventaTxt').textContent = `¿Cuánto le vendió a ${o ? o.nombre : c.cliente}?`;
+  $('#venta_monto').value = '';
+  document.querySelectorAll('#venta_pago button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === 'contado'));
+  $('#ventaSheet').hidden = false; alFrente($('#ventaSheet'));
+}
+async function terminarVenta(valor) {
+  const { c, o } = ventaCita; ventaCita = null; $('#ventaSheet').hidden = true;
+  if (valor > 0) registrarMov(o ? o.id : '', valor, ventaPago, 'Visita del ' + fechaCorta(c.fecha), c.id);
+  await guardarCita({ ...c, estado: 'hecho', opticaId: c.opticaId || (o ? o.id : '') });
+  toast(valor > 0 ? `Venta de ${money(valor)} registrada${ventaPago === 'venta' ? ' (a crédito)' : ''}` : 'Marcada como visitada');
+  if (fichaId) verFicha(fichaId);
+}
+$('#venta_pago').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b) return; ventaPago = b.dataset.p; document.querySelectorAll('#venta_pago button').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+$('#ventaOk').addEventListener('click', () => { const v = Number($('#venta_monto').value); if (!(v > 0)) { toast('Escriba el valor vendido, o toque «No vendí».'); return; } if (ventaPago === 'venta' && !ventaCita.o) { toast('Para vender a crédito, primero una la cita a una óptica.', 4000); return; } terminarVenta(v); });
+$('#ventaNo').addEventListener('click', () => terminarVenta(0));
+$('#ventaCancelar').addEventListener('click', () => { ventaCita = null; $('#ventaSheet').hidden = true; });
 
 /* Ruta del día en Google Maps */
 function urlRutaHoy() {
@@ -2143,6 +2240,7 @@ async function alTocar(e) {
   const fo = e.target.closest('[data-opf]'); if (fo) { filtroOp = fo.dataset.opf; render(); return; }
   if (e.target.closest('[data-op-importar]')) { importarClientes(); return; }
   const ot = e.target.closest('[data-op-tel]'); if (ot) { abrirOptica(tablas.opticas.find(x => x.id === ot.dataset.opTel)); setTimeout(() => $('#op_tel').focus(), 150); return; }
+  const ms = e.target.closest('[data-ms]'); if (ms) { mesStats = mesMas(mesStats || mesDe(hoyISO()), Number(ms.dataset.ms)); render(); return; }
   const vo = e.target.closest('[data-op-ver]'); if (vo) { verFicha(vo.dataset.opVer); return; }
   const bp = e.target.closest('button[data-p]');
   if (bp) { periodo = bp.dataset.p; despl = 0; render(); return; }
@@ -2167,6 +2265,7 @@ async function alTocar(e) {
     porBorrar = null;
     const o = opticaDe(c);
     if (c.estado !== 'hecho' && c.tipo === 'cobro' && o) { pedirCobro(c, o); return; }
+    if (c.estado !== 'hecho' && c.tipo === 'venta') { pedirVenta(c, o); return; }
     if (c.estado === 'hecho') tablas.abonos.filter(a => a.citaId === c.id).forEach(a => borrarTabla('abonos', a.id, true));
     try { await guardarCita({ ...c, estado: c.estado === 'hecho' ? 'pendiente' : 'hecho' }); toast(c.estado === 'hecho' ? 'Volvió a pendiente' : 'Marcada como visitada'); }
     catch (err) { toast('No se pudo guardar. Revise el internet.'); }
