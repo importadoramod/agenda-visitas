@@ -465,9 +465,23 @@ header{background:transparent;border-bottom:0}
 nav{background:var(--vidrio);border:1px solid var(--line)}
 nav button[aria-pressed="true"]{background:linear-gradient(160deg,color-mix(in srgb,var(--coral) 22%,var(--surface)),var(--surface));color:var(--ink)}
 h2{letter-spacing:.1em}
+
+/* ---------- Bienvenida ---------- */
+#splash{position:fixed;inset:0;z-index:100;background:#f7f7f7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+  padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));cursor:pointer;transition:opacity .45s ease}
+#splash[hidden]{display:none!important}
+#splash img{width:min(78vw,420px);height:auto;opacity:0;transform:scale(.88);transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1)}
+#splash.ver img{opacity:1;transform:scale(1)}
+#splash.fuera{opacity:0}
+#splashToque{margin:0;font-family:var(--f-body);font-size:20px;color:#7a1d1d;letter-spacing:.04em;animation:latido 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){#splash img{transform:none;transition:opacity .3s}#splashToque{animation:none}}
 </style>
 </head>
 <body>
+<div id="splash" role="dialog" aria-label="Bienvenida" hidden>
+  <img src="logo-bienvenida.jpg" alt="MOD, lo quieres… lo tenemos" width="720" height="581">
+  <p id="splashToque" hidden>Toque para entrar</p>
+</div>
 
 <header>
   <div class="top">
@@ -1229,7 +1243,8 @@ function resumenHTML() {
   }
   if (periodo === 'dia' && lista.length) h += '<h2>Citas del día</h2><div class="lista">' + lista.sort(orden).map(card).join('') + '</div>';
   if (!lista.length) h += '<p class="vacio">No hay citas en este periodo.</p>';
-  h += `<div class="ajustes"><p>Ajustes</p><button id="btnAjustes" data-ajustes="1">📅 Calendario de Google: ${esc(calNombre)}</button></div>`;
+  h += `<div class="ajustes"><p>Ajustes</p><button id="btnAjustes" data-ajustes="1">📅 Calendario de Google: ${esc(calNombre)}</button>
+    <button id="btnSonido" class="aj-sec" data-sonido="1">${sonidoBienvenida() ? '🔔 Sonido al abrir: encendido' : '🔕 Sonido al abrir: apagado'}</button></div>`;
   return h;
 }
 
@@ -2027,6 +2042,7 @@ $('#btnBorrar').addEventListener('click', async () => {
 
 /* ---------- acciones de cada cita ---------- */
 async function alTocar(e) {
+  if (e.target.closest('[data-sonido]')) { const on = !sonidoBienvenida(); try { localStorage.setItem('agenda_sonido_bienvenida', on ? '1' : '0'); } catch (er) {} if (on) tonoBienvenida(); render(); toast(on ? 'Sonido al abrir encendido' : 'Sonido al abrir apagado', 2000); return; }
   const ird = e.target.closest('[data-ir-dia]');
   if (ird) {
     foco = ird.dataset.irDia; calModo = 'dia'; vista = 'mes';
@@ -2095,6 +2111,35 @@ $('.b-lupa').innerHTML = ICO.lupa; $('#buscarMic').innerHTML = ICO.mic;
     try { r.start(); } catch (er) { $('#buscarMic').classList.remove('on'); }
   });
 })();
+
+/* ---------- bienvenida con logo y tono ---------- */
+function sonidoBienvenida() { try { return localStorage.getItem('agenda_sonido_bienvenida') !== '0'; } catch (e) { return true; } }
+let audioBienvenida = null;
+function tonoBienvenida() {
+  try { audioBienvenida = audioBienvenida || new Audio('bienvenida.mp3'); audioBienvenida.volume = 0.85; audioBienvenida.currentTime = 0; return audioBienvenida.play(); }
+  catch (e) { return Promise.reject(e); }
+}
+function bienvenida() {
+  let visto = false; try { visto = sessionStorage.getItem('agenda_bienvenida') === '1'; sessionStorage.setItem('agenda_bienvenida', '1'); } catch (e) {}
+  if (visto) return; // solo al abrir la app de cero
+  const sp = $('#splash'); sp.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => sp.classList.add('ver')));
+  let sono = false, cerrada = false, timer = null;
+  const cerrar = (espera) => { clearTimeout(timer); timer = setTimeout(() => { if (cerrada) return; cerrada = true; sp.classList.add('fuera'); setTimeout(() => { sp.hidden = true; }, 450); }, espera); };
+  if (!sonidoBienvenida()) { cerrar(1600); }
+  else {
+    tonoBienvenida().then(() => { sono = true; cerrar(2200); }).catch(() => {
+      // El celular no deja sonar sin un toque (iPhone): se pide tocar
+      $('#splashToque').hidden = false; cerrar(9000);
+    });
+  }
+  sp.addEventListener('click', () => {
+    if (cerrada) return;
+    if (!sono && sonidoBienvenida()) { sono = true; tonoBienvenida().catch(() => {}); $('#splashToque').hidden = true; cerrar(1100); }
+    else cerrar(0);
+  });
+}
+bienvenida();
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 iniciar();
