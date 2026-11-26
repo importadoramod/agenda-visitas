@@ -384,13 +384,94 @@ nav button{font-size:16px}
 .hoja.chica[hidden]{display:none!important}
 .hoja.chica .hojaIn{background:var(--surface);border-radius:22px 22px 0 0;width:100%;box-shadow:0 -8px 30px rgb(0 0 0 / .25)}
 .ruta{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;min-height:54px;border-radius:14px;background:var(--ink);color:var(--bg);text-decoration:none;font-size:18px;font-weight:500}
+
+/* ---------- Capa de alto impacto (mockup): tarjetas con brillo rojo, degradado coral, acciones redondas ---------- */
+:root{--coral:#ff6b5e;--coral2:#e5484d;--verde:#2f9e5b;--verde-bg:color-mix(in srgb,#2f9e5b 16%,transparent);
+  --brillo:color-mix(in srgb,var(--coral) 45%,transparent);--brillo-suave:color-mix(in srgb,var(--coral) 18%,transparent);
+  --vidrio:color-mix(in srgb,var(--surface) 88%,transparent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--verde:#4cc37c;--verde-bg:color-mix(in srgb,#4cc37c 18%,transparent)}}
+:root[data-theme="dark"]{--verde:#4cc37c;--verde-bg:color-mix(in srgb,#4cc37c 18%,transparent)}
+body{background:radial-gradient(1200px 500px at 50% -120px,color-mix(in srgb,var(--coral) 10%,transparent),transparent 70%) var(--bg)}
+h1 .acento{background:linear-gradient(90deg,var(--coral),var(--coral2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header{background:transparent;border-bottom:0}
+/* tarjetas */
+.card{background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 96%,var(--coral) 4%),var(--surface));
+  border:1px solid var(--brillo);box-shadow:0 0 0 1px var(--brillo-suave),0 10px 30px -12px color-mix(in srgb,var(--coral) 35%,transparent);border-radius:22px}
+.card.hecho{box-shadow:none;border-color:var(--line)}
+.cita-cab{display:flex;gap:14px;align-items:center}
+.cita-info{min-width:0;display:flex;flex-direction:column;gap:4px}
+.cita-info .cn{margin:0;font-size:21px}
+.cita-hora{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:17px}
+.cita-hora svg{width:17px;height:17px;flex:none}
+.cita-pills{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.card.cita .cd{margin-top:8px}
+.pill{font-size:14px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap;flex:none}
+.pill.verde{color:var(--verde);background:var(--verde-bg)}
+.pill.rojo{color:var(--cobro);background:color-mix(in srgb,var(--cobro) 15%,transparent)}
+/* miniatura de mapa */
+.mapa{flex:none;width:84px;height:84px;border-radius:16px;position:relative;overflow:hidden;display:block;border:1px solid var(--line);
+  background:
+    linear-gradient(115deg,transparent 46%,color-mix(in srgb,var(--muted) 45%,transparent) 47%,color-mix(in srgb,var(--muted) 45%,transparent) 53%,transparent 54%),
+    linear-gradient(25deg,transparent 60%,color-mix(in srgb,var(--muted) 30%,transparent) 61%,color-mix(in srgb,var(--muted) 30%,transparent) 64%,transparent 65%),
+    repeating-linear-gradient(0deg,transparent 0 15px,color-mix(in srgb,var(--muted) 18%,transparent) 15px 16px),
+    repeating-linear-gradient(90deg,transparent 0 15px,color-mix(in srgb,var(--muted) 18%,transparent) 15px 16px),
+    color-mix(in srgb,#1d3a4f 55%,var(--surface))}
+.mapa.sin{filter:grayscale(1);opacity:.55}
+.mapa-pin{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:30px;height:30px;color:var(--coral);filter:drop-shadow(0 2px 4px rgb(0 0 0 / .45))}
+.mapa-pin svg{width:100%;height:100%}
+.btnlink svg{width:18px;height:18px;margin-right:6px}
+.acc a.btnlink.llegar{background:linear-gradient(90deg,var(--coral),var(--coral2));border:0;color:#fff}
+/* semana y mini calendario */
+.semana{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:16px}
+.dia-s{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:14px;border:1px solid var(--line);background:var(--vidrio);color:var(--ink);min-height:62px}
+.dia-s small{font-size:13px;color:var(--muted)}
+.dia-s b{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.dia-s.hoy{background:linear-gradient(160deg,var(--coral),var(--coral2));border-color:transparent;color:#fff;box-shadow:0 6px 18px -6px var(--coral)}
+.dia-s.hoy small{color:#fff}
+.dia-s i,.mc-d i{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
+.minical{margin-top:12px;border:1px solid var(--line);border-radius:20px;padding:12px;background:var(--vidrio)}
+.mc-tit{text-align:center;font-weight:600;font-size:17px;margin-bottom:6px}
+.mc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}
+.mc-s{font-size:12px;color:var(--muted);padding:2px 0}
+.mc-d{position:relative;border:0;background:transparent;color:var(--ink);font-size:15px;min-height:34px;border-radius:50%;font-variant-numeric:tabular-nums}
+.mc-d.pas{color:var(--muted)}
+.mc-d.hoy{background:linear-gradient(160deg,var(--coral),var(--coral2));color:#fff;font-weight:700;box-shadow:0 0 14px var(--brillo)}
+/* ópticas */
+.op-sub{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:17px;margin-top:6px}
+.op-sub svg{width:16px;height:16px;flex:none;color:var(--muted)}
+.redondos{display:flex;justify-content:space-around;gap:8px;margin-top:14px}
+.redondo{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:var(--ink);min-width:72px}
+.redondo > span{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--soft);border:1px solid var(--line);color:var(--coral)}
+.redondo svg{width:24px;height:24px}
+.redondo small{font-size:13px;color:var(--muted)}
+.redondo.off{opacity:.35}
+.op-ver{margin-top:12px;width:100%;min-height:46px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:16px}
+.op .op-cab .cn{font-size:21px}
+.spark{display:block;width:100%;height:34px;margin-top:6px;color:var(--coral)}
+/* buscador */
+.buscador{display:flex;align-items:center;gap:8px;margin-top:16px;border:1px solid var(--line);border-radius:99px;background:var(--vidrio);padding:0 6px 0 16px}
+.buscador input#buscar{border:0;background:transparent;margin:0;padding:12px 0;flex:1;min-width:0;border-radius:0}
+.buscador input#buscar:focus{outline:none}
+.buscador:focus-within{border-color:var(--coral)}
+.b-lupa{width:20px;height:20px;color:var(--muted);flex:none}
+#buscarMic{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--coral);display:flex;align-items:center;justify-content:center}
+#buscarMic svg,.b-lupa svg{width:22px;height:22px}
+#buscarMic.on{background:var(--brillo-suave)}
+/* botón principal */
+#nueva span{background:linear-gradient(90deg,var(--coral),var(--coral2));color:#fff;box-shadow:0 10px 30px -6px color-mix(in srgb,var(--coral) 70%,transparent),inset 0 1px 0 rgb(255 255 255 / .25)}
+.ruta{background:linear-gradient(90deg,var(--coral),var(--coral2));color:#fff;box-shadow:0 8px 22px -8px var(--coral)}
+.ruta svg{width:20px;height:20px}
+.dato{background:var(--vidrio);border-radius:20px}
+nav{background:var(--vidrio);border:1px solid var(--line)}
+nav button[aria-pressed="true"]{background:linear-gradient(160deg,color-mix(in srgb,var(--coral) 22%,var(--surface)),var(--surface));color:var(--ink)}
+h2{letter-spacing:.1em}
 </style>
 </head>
 <body>
 
 <header>
   <div class="top">
-    <div class="marca"><img class="logo" src="icon-192.png?v=2" alt="MOD" width="56" height="56"><div><h1>Agenda de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
+    <div class="marca"><img class="logo" src="icon-192.png?v=2" alt="MOD" width="56" height="56"><div><h1><span class="acento">Agenda</span> de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
     <button id="btnLetra" aria-pressed="false" aria-label="Letra más grande">A<span>A</span></button>
   </div>
   <nav>
@@ -403,7 +484,7 @@ nav button{font-size:16px}
 
 <main>
   <div id="aviso" class="aviso" hidden></div>
-  <input id="buscar" placeholder="🔎 Buscar cliente o ciudad" hidden>
+  <div class="buscador" id="cajaBuscar" hidden><span class="b-lupa"></span><input id="buscar" placeholder="Buscar cliente o ciudad" autocomplete="off"><button type="button" id="buscarMic" aria-label="Buscar por voz"></button></div>
   <div id="lista"><p class="vacio">Abriendo la agenda…</p></div>
 </main>
 
@@ -933,21 +1014,92 @@ $('#btnDesconectar').addEventListener('click', () => {
 const pend = c => c.estado !== 'hecho';
 const orden = (a, b) => ((a.fecha || '') + (a.hora || '99')).localeCompare((b.fecha || '') + (b.hora || '99'));
 
+/* ---------- íconos y piezas del diseño ---------- */
+const ICO = {
+  tel: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z" fill="currentColor"/></svg>',
+  wa: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.15l-.3-.18-3 .78.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.25-.12-1.47-.72-1.7-.8s-.39-.12-.56.12-.64.8-.78.97-.29.18-.54.06a6.7 6.7 0 0 1-3.3-2.9c-.25-.43.25-.4.71-1.33a.45.45 0 0 0-.02-.42c-.06-.12-.56-1.35-.77-1.85s-.41-.42-.56-.43h-.48a.92.92 0 0 0-.67.31 2.8 2.8 0 0 0-.87 2.08 4.9 4.9 0 0 0 1.02 2.58 11.1 11.1 0 0 0 4.27 3.77c1.6.69 2.22.75 3.02.63a2.57 2.57 0 0 0 1.69-1.19 2.1 2.1 0 0 0 .14-1.19c-.06-.1-.23-.16-.48-.28z" fill="currentColor"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" fill="currentColor"/></svg>',
+  reloj: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm.75 10.6 3.4 2.04-.75 1.25-4.15-2.5V7h1.5z" fill="currentColor"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z" fill="currentColor"/></svg>',
+  lupa: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 2a8 8 0 0 1 6.32 12.9l5.39 5.4-1.41 1.4-5.4-5.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z" fill="currentColor"/></svg>'
+};
+const DIAS_CORTOS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
+function miniaturaMapa(o) {
+  const dentro = `<span class="mapa-pin">${ICO.pin}</span>`;
+  return o && tieneUbic(o)
+    ? `<a class="mapa" href="${esc(urlLlegar(o))}" target="_blank" rel="noopener" aria-label="Cómo llegar a ${esc(o.nombre)}">${dentro}</a>`
+    : `<span class="mapa sin" aria-hidden="true">${dentro}</span>`;
+}
+function pildoraDeuda(o) {
+  if (!o) return '';
+  const s = saldoDe(o);
+  return s > 0 ? `<span class="pill rojo">Debe ${money(s)}</span>` : `<span class="pill verde">Sin deuda</span>`;
+}
+function accionesRedondas(o) {
+  const tel = telDigitos(o.telefono).length >= 7;
+  const b = (href, ico, txt, nueva) => `<a class="redondo" href="${esc(href)}" ${nueva ? 'target="_blank" rel="noopener"' : ''} aria-label="${txt}"><span>${ico}</span><small>${txt}</small></a>`;
+  const off = (ico, txt) => `<span class="redondo off" aria-hidden="true"><span>${ico}</span><small>${txt}</small></span>`;
+  return `<div class="redondos">
+    ${tel ? b('tel:' + telDigitos(o.telefono), ICO.tel, 'Llamar') : off(ICO.tel, 'Llamar')}
+    ${tel ? b(urlWhats(o.telefono), ICO.wa, 'WhatsApp', true) : off(ICO.wa, 'WhatsApp')}
+    ${tieneUbic(o) ? b(urlLlegar(o), ICO.pin, 'Cómo llegar', true) : off(ICO.pin, 'Ubicación')}
+  </div>`;
+}
+// Línea de cómo cambió el total por cobrar en los últimos 30 días
+function sparkline() {
+  const dias = 30, hoy = hoyISO(), pts = [];
+  const movs = tablas.abonos.slice().sort((a, b) => a.fecha.localeCompare(b.fecha));
+  let base = movs.filter(a => a.fecha < sumarDias(hoy, -dias + 1)).reduce((s, a) => s + Number(a.monto || 0), 0);
+  for (let i = dias - 1; i >= 0; i--) {
+    const f = sumarDias(hoy, -i);
+    base += movs.filter(a => a.fecha === f).reduce((s, a) => s + Number(a.monto || 0), 0);
+    pts.push(Math.max(0, base));
+  }
+  const max = Math.max(...pts), min = Math.min(...pts);
+  if (max === min) return '';
+  const W = 120, H = 34;
+  const xy = pts.map((v, i) => `${(i / (dias - 1) * W).toFixed(1)},${(H - 3 - (v - min) / (max - min) * (H - 6)).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Total por cobrar en los últimos 30 días"><polyline points="${xy}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+function semanaHTML() {
+  const h0 = hoyISO(), f = desdeISO(h0), lun = sumarDias(h0, -((f.getDay() + 6) % 7));
+  let h = '<div class="semana">';
+  for (let k = 0; k < 7; k++) {
+    const iso = sumarDias(lun, k), d = desdeISO(iso), hay = citas.some(c => c.fecha === iso && pend(c));
+    h += `<button class="dia-s ${iso === h0 ? 'hoy' : ''}" data-ir-dia="${iso}" aria-label="${fechaLarga(iso)}"><small>${DIAS_CORTOS[k]}</small><b>${d.getDate()}</b>${hay ? '<i></i>' : ''}</button>`;
+  }
+  return h + '</div>';
+}
+function miniCalHTML() {
+  const h0 = hoyISO(), f = desdeISO(h0), a = new Date(f.getFullYear(), f.getMonth(), 1), ult = new Date(f.getFullYear(), f.getMonth() + 1, 0).getDate();
+  const pref = a.getFullYear() + '-' + pad(a.getMonth() + 1) + '-';
+  let h = `<div class="minical"><div class="mc-tit">${may1(MESES_L[a.getMonth()])}</div><div class="mc-grid">` + ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(x => `<span class="mc-s">${x}</span>`).join('');
+  for (let k = 0, hu = (a.getDay() + 6) % 7; k < hu; k++) h += '<span></span>';
+  for (let d = 1; d <= ult; d++) {
+    const iso = pref + pad(d), hay = citas.some(c => c.fecha === iso && pend(c));
+    h += `<button class="mc-d ${iso === h0 ? 'hoy' : ''} ${iso < h0 ? 'pas' : ''}" data-ir-dia="${iso}">${d}${hay ? '<i></i>' : ''}</button>`;
+  }
+  return h + '</div></div>';
+}
+
 function card(c) {
   const det = c.tipo === 'venta'
     ? `<div class="cd">Llevar: <span class="merc">${esc(c.mercaderia)}</span></div>`
     : `<div class="cd">Cobrar: <span class="monto">${money(c.monto)}</span></div>`;
   const seguro = porBorrar === c.id;
-  return `<article class="card ${c.estado === 'hecho' ? 'hecho' : ''}">
-    <div class="fila1"><span class="hora">${c.hora ? horaTxt(c.hora) : 'Sin hora'}</span>
-      <span class="tag ${c.tipo}">${c.tipo === 'venta' ? 'Venta' : 'Cobro'}</span></div>
-    ${c.fecha !== hoyISO() ? `<div class="cf">${fechaLarga(c.fecha)}</div>` : ''}
-    <div class="cn">${esc(c.cliente)}</div>
-    <div class="cd">📍 ${esc(c.ciudad)}</div>
+  const o = opticaDe(c);
+  return `<article class="card cita ${c.estado === 'hecho' ? 'hecho' : ''}">
+    <div class="cita-cab">${miniaturaMapa(o)}
+      <div class="cita-info">
+        <div class="cn">${esc(c.cliente)}</div>
+        <div class="cita-hora">${ICO.reloj}<span>${c.hora ? horaTxt(c.hora) : 'Sin hora'}${c.fecha !== hoyISO() ? ' · ' + fechaCorta(c.fecha) : ''}</span></div>
+        <div class="cita-pills"><span class="tag ${c.tipo}">${c.tipo === 'venta' ? 'Venta' : 'Cobro'}</span>${pildoraDeuda(o)}</div>
+      </div></div>
+    <div class="cd">${esc(c.ciudad)}</div>
     ${det}
     ${c.nota ? `<div class="cno">Nota: ${esc(c.nota)}</div>` : ''}
     <div class="acc">
-      ${(() => { const o = opticaDe(c); return o && tieneUbic(o) ? `<a class="btnlink llegar" href="${esc(urlLlegar(o))}" target="_blank" rel="noopener">🧭 Cómo llegar</a>` : ''; })()}
+      ${o && tieneUbic(o) ? `<a class="btnlink llegar" href="${esc(urlLlegar(o))}" target="_blank" rel="noopener">${ICO.pin} Cómo llegar</a>` : ''}
       ${c.eventId ? `<span class="encal">📅 Alarma puesta en Google Calendar</span>` : c._pend ? `<span class="encal">⏳ Guardando…</span>` : ''}
       <button class="ok" data-a="marcar" data-id="${c.id}">${c.estado === 'hecho' ? '↩ No fui' : '✓ Ya fui'}</button>
       <button data-a="editar" data-id="${c.id}">✏️ Cambiar</button>
@@ -965,8 +1117,8 @@ function porDia(lista) {
 function render() {
   const h = hoyISO();
   const fl = fechaLarga(h); $('#hoyTxt').textContent = fl.charAt(0).toUpperCase() + fl.slice(1);
-  $('#buscar').hidden = !(vista === 'todas' || vista === 'opticas' || (vista === 'mes' && calModo === 'lista'));
-  $('#buscar').placeholder = vista === 'opticas' ? '🔎 Buscar óptica, dueño o ciudad' : '🔎 Buscar cliente o ciudad';
+  $('#cajaBuscar').hidden = !(vista === 'todas' || vista === 'opticas' || (vista === 'mes' && calModo === 'lista'));
+  $('#buscar').placeholder = vista === 'opticas' ? 'Buscar óptica…' : 'Buscar cliente o ciudad';
   $('#nueva span').textContent = vista === 'opticas' ? '＋ Nueva óptica' : '＋ Nueva cita';
   let html = '';
   if (vista === 'hoy') {
@@ -977,11 +1129,14 @@ function render() {
     html += `<p class="saludo">${hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches'} 👋</p>
       <p class="frase">${np === 0 ? 'Hoy no tiene visitas pendientes.' : `Hoy tiene <b style="color:var(--ink)">${np} ${np === 1 ? 'visita' : 'visitas'}</b> por hacer.`}
       ${cobrar > 0 ? ` Debe cobrar <b>${money(cobrar)}</b>.` : ''}</p>`;
+    html += semanaHTML() + miniCalHTML();
     const ruta = urlRutaHoy();
-    if (ruta) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">🗺 Ver la ruta de hoy en Google Maps</a>`;
+    if (ruta) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">${ICO.pin} Ver la ruta de hoy en Google Maps</a>`;
     if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2><div class="lista">' + atr.map(card).join('') + '</div>';
     html += '<h2>Visitas de hoy</h2>' + (hoy.length ? '<div class="lista">' + hoy.map(card).join('') + '</div>'
       : '<p class="vacio">No hay visitas para hoy. Toque <b>Nueva cita</b> para anotar una.</p>');
+    const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden).slice(0, 3);
+    if (prox.length) html += '<h2>Próximas visitas</h2><div class="lista">' + prox.map(card).join('') + '</div>';
   } else if (vista === 'proximas') {
     const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden);
     html = prox.length ? porDia(prox) : '<p class="vacio">No hay visitas anotadas para los próximos días.</p>';
@@ -1246,17 +1401,17 @@ function opticasHTML() {
   const lista = (filtroOp === 'deuda' ? conDeuda : todas).filter(o => !q || normalTxt([o.nombre, o.dueno, o.ciudad, o.referencia].join(' ')).includes(q));
   let h = `<div class="cifras">
       <div class="dato"><small>Ópticas</small><b>${todas.length}</b></div>
-      <div class="dato"><small>Total por cobrar</small><b class="cobro">${money(totalPorCobrar())}</b></div></div>
+      <div class="dato"><small>Total por cobrar</small><b class="cobro">${money(totalPorCobrar())}</b>${sparkline()}</div></div>
     <div class="periodos"><button data-opf="todas" aria-pressed="${filtroOp === 'todas'}">Todas (${todas.length})</button>
       <button data-opf="deuda" aria-pressed="${filtroOp === 'deuda'}">Con deuda (${conDeuda.length})</button></div>`;
   const sinFicha = clientesSinFicha();
   if (sinFicha.length) h += `<button class="aj-sec op-importar" data-op-importar="1">➕ Crear fichas de mis ${sinFicha.length} clientes con citas</button>`;
   if (!lista.length) h += `<p class="vacio">${todas.length ? 'No hay ópticas con esos datos.' : 'Todavía no hay ópticas. Toque <b>＋ Nueva óptica</b> para anotar la primera.'}</p>`;
   h += '<div class="lista">' + lista.map(o => `<article class="card op">
-      <button class="op-cab" data-op-ver="${o.id}"><span class="cn">${esc(o.nombre)}</span>${deudaHTML(o)}</button>
-      ${o.dueno ? `<div class="cd">👤 ${esc(o.dueno)}</div>` : ''}
-      <div class="cd">📍 ${esc([o.ciudad, o.referencia].filter(Boolean).join(' · ') || 'Sin ubicación')}</div>
-      <div class="acc">${botonesContacto(o)}<button data-op-ver="${o.id}">Ver ficha</button></div></article>`).join('') + '</div>';
+      <button class="op-cab" data-op-ver="${o.id}"><span class="cn">${esc(o.nombre)}</span>${pildoraDeuda(o)}</button>
+      <div class="op-sub">${ICO.pin}<span>${esc([o.dueno, o.ciudad].filter(Boolean).join(' · ') || 'Sin datos')}</span></div>
+      ${accionesRedondas(o)}
+      <button class="op-ver" data-op-ver="${o.id}">Ver ficha ›</button></article>`).join('') + '</div>';
   return h;
 }
 function clientesSinFicha() {
@@ -1872,6 +2027,12 @@ $('#btnBorrar').addEventListener('click', async () => {
 
 /* ---------- acciones de cada cita ---------- */
 async function alTocar(e) {
+  const ird = e.target.closest('[data-ir-dia]');
+  if (ird) {
+    foco = ird.dataset.irDia; calModo = 'dia'; vista = 'mes';
+    document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === 'mes')));
+    render(); window.scrollTo(0, 0); return;
+  }
   const fo = e.target.closest('[data-opf]'); if (fo) { filtroOp = fo.dataset.opf; render(); return; }
   if (e.target.closest('[data-op-importar]')) { importarClientes(); return; }
   const vo = e.target.closest('[data-op-ver]'); if (vo) { verFicha(vo.dataset.opVer); return; }
@@ -1922,6 +2083,18 @@ document.querySelectorAll('.tipos button').forEach(b => b.addEventListener('clic
 $('#nueva').addEventListener('click', () => { if (vista === 'opticas') { abrirOptica(null); return; } abrir(null); if (vista === 'mes' && foco && foco >= hoyISO()) $('#f_fecha').value = foco; });
 $('#btnCancelar').addEventListener('click', cerrar);
 $('#buscar').addEventListener('input', render);
+$('.b-lupa').innerHTML = ICO.lupa; $('#buscarMic').innerHTML = ICO.mic;
+(() => { // buscar por voz
+  const RV = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!RV) { $('#buscarMic').hidden = true; return; }
+  $('#buscarMic').addEventListener('click', () => {
+    const r = new RV(); r.lang = 'es-EC'; r.interimResults = false;
+    $('#buscarMic').classList.add('on');
+    r.onresult = ev => { $('#buscar').value = ev.results[0][0].transcript.replace(/[.¿?¡!]/g, '').trim(); render(); };
+    r.onend = () => $('#buscarMic').classList.remove('on');
+    try { r.start(); } catch (er) { $('#buscarMic').classList.remove('on'); }
+  });
+})();
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 iniciar();
