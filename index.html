@@ -475,6 +475,10 @@ h2{letter-spacing:.1em}
 #splash.fuera{opacity:0}
 #splashToque{margin:0;font-family:var(--f-body);font-size:20px;color:#7a1d1d;letter-spacing:.04em;animation:latido 1.4s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){#splash img{transform:none;transition:opacity .3s}#splashToque{animation:none}}
+
+.det-op{margin-top:14px}
+.det-op .op-cab .cn{font-size:21px}
+.det-op .aj-sec{width:100%;text-align:left;padding:0 14px}
 </style>
 </head>
 <body>
@@ -1361,11 +1365,32 @@ function calendarioHTML() {
   }
   return html;
 }
+function bloqueOptica(c) {
+  const o = opticaDe(c);
+  if (o) return `<section class="op-caja det-op">
+      <p class="aj-et">Datos de la óptica</p>
+      <div class="op-cab"><span class="cn">${esc(o.nombre)}</span>${pildoraDeuda(o)}</div>
+      ${o.dueno ? `<p class="op-lin">👤 ${esc(o.dueno)}</p>` : ''}
+      ${o.telefono ? `<p class="op-lin">📞 ${esc(o.telefono)}</p>` : ''}
+      <p class="op-lin">📍 ${esc([o.direccion, o.ciudad].filter(Boolean).join(', ') || 'Sin dirección')}${o.lat && o.lng ? ' <small>(ubicación GPS guardada)</small>' : ''}</p>
+      ${o.referencia ? `<p class="op-lin">🔎 ${esc(o.referencia)}</p>` : ''}
+      ${accionesRedondas(o)}
+      <button class="op-ver" data-op-ver="${o.id}">Ver ficha completa ›</button>
+    </section>`;
+  const sug = tablas.opticas.map(x => ({ x, p: parecido(c, x) + (c.ciudad && fonetico(c.ciudad) === fonetico(x.ciudad) ? 0.4 : 0) }))
+    .filter(y => y.p > 0).sort((a, b) => b.p - a.p).slice(0, 3).map(y => y.x);
+  return `<section class="op-caja det-op">
+      <p class="aj-et">Esta cita no está unida a una óptica</p>
+      <p class="ayuda">${sug.length ? '¿Es alguna de estas? Tóquela para ver su ubicación, teléfono y deuda:' : 'Elija la óptica en «Cambiar», o cree su ficha:'}</p>
+      ${sug.map(x => `<button class="aj-sec" data-vincular="${x.id}" data-cita="${c.id}">${esc(x.nombre)}${x.dueno ? ' · ' + esc(x.dueno) : ''}${x.ciudad ? ' · ' + esc(x.ciudad) : ''}</button>`).join('')}
+      <button class="aj-sec" data-op-nueva-cita="${c.id}">＋ Crear ficha de óptica para este cliente</button>
+    </section>`;
+}
 function verDetalle(id) {
   detalleId = id;
   const c = citas.find(x => x.id === id);
   if (!c) { $('#detalle').hidden = true; detalleId = null; return; }
-  $('#detCard').innerHTML = card(c); $('#detalle').hidden = false;
+  $('#detCard').innerHTML = card(c) + bloqueOptica(c); $('#detalle').hidden = false; alFrente($('#detalle'));
 }
 
 /* ---------- formulario ---------- */
@@ -1376,15 +1401,43 @@ function elegirTipo(t) {
   $('#campoCobro').hidden = t !== 'cobro';
 }
 /* ---------- ópticas: fichas, ubicación, cómo llegar y cuentas por cobrar ---------- */
+let zHoja = 30; const alFrente = el => { el.style.zIndex = ++zHoja; };
+let vincularCita = null;
 let filtroOp = 'todas', opEditId = null, opDeuda = false, opUbic = null, fichaId = null, movTipo = '', cobroCita = null, opticaSel = '';
 const normalTxt = t => sinTildes(String(t || '').toLowerCase()).replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+// Escritura "por sonido": Cusco = Cuzco, Vaca = Baca, Hernández = Ernandes…
+const fonetico = t => normalTxt(t).replace(/h/g, '').replace(/z/g, 's').replace(/c([ei])/g, 's$1').replace(/v/g, 'b').replace(/ll/g, 'y')
+  .replace(/qu/g, 'k').replace(/c/g, 'k').replace(/(.)\1+/g, '$1').trim();
+function distancia(a, b) {
+  if (Math.abs(a.length - b.length) > 2) return 9;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+// Qué tanto se parece el cliente de una cita a una óptica (0 = nada, 3 = igual)
+function parecido(c, o) {
+  const n = fonetico(c.cliente);
+  if (!n) return 0;
+  let p = 0;
+  for (const campo of [o.nombre, o.dueno]) {
+    const f = fonetico(campo);
+    if (!f) continue;
+    if (n === f) p = Math.max(p, 3);
+    else if (n.includes(f) || f.includes(n)) p = Math.max(p, f.length >= 4 && n.length >= 4 ? 2.5 : 0);
+    else if (distancia(n, f) <= (f.length > 8 ? 2 : 1)) p = Math.max(p, 2);
+  }
+  if (p && c.ciudad && o.ciudad && fonetico(c.ciudad) === fonetico(o.ciudad)) p += 0.5;
+  return p;
+}
 function opticaDe(c) {
   if (!c) return null;
   const porId = c.opticaId && tablas.opticas.find(o => o.id === c.opticaId);
   if (porId) return porId;
-  const n = normalTxt(c.cliente);
-  if (!n) return null;
-  return tablas.opticas.find(o => { const on = normalTxt(o.nombre); return on && (n === on || n.startsWith(on + ' ') || n.endsWith(' ' + on)); }) || null;
+  let mejor = null, pm = 0, empate = false;
+  for (const o of tablas.opticas) { const p = parecido(c, o); if (p > pm) { mejor = o; pm = p; empate = false; } else if (p && p === pm) empate = true; }
+  return pm >= 2 && !empate ? mejor : null;
 }
 const movsDe = o => tablas.abonos.filter(a => a.opticaId === o.id).sort((a, b) => (b.fecha + (b.creado || '')).localeCompare(a.fecha + (a.creado || '')));
 const saldoDe = o => Math.round(movsDe(o).reduce((s, a) => s + Number(a.monto || 0), 0) * 100) / 100;
@@ -1485,7 +1538,7 @@ function verFicha(id) {
       ${pasadas.length ? '<p class="aj-et" style="margin-top:14px">Últimas visitas</p>' + pasadas.map(filaCita).join('') : ''}
     </section>
     <button type="button" class="aj-sec" data-op-editar="${o.id}">✏️ Editar datos de la óptica</button>`;
-  $('#ficha').hidden = false;
+  $('#ficha').hidden = false; alFrente($('#ficha'));
 }
 const fechaCorta = iso => { const d = desdeISO(iso); return d.getDate() + ' ' + MESES[d.getMonth()].toLowerCase() + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); };
 function abrirMov(tipo) {
@@ -1536,7 +1589,7 @@ function abrirOptica(o) {
   $('#opErr').textContent = '';
   const b = $('#opBorrar'); b.hidden = !o; b.classList.remove('seguro'); b.textContent = '🗑 Borrar esta óptica';
   pintarDeuda(); pintarUbic();
-  $('#formOptica').hidden = false; $('#formOptica').scrollTop = 0;
+  $('#formOptica').hidden = false; alFrente($('#formOptica')); $('#formOptica').scrollTop = 0;
 }
 function leerMapa(t) {
   t = t.trim();
@@ -1560,7 +1613,7 @@ $('#btnGps').addEventListener('click', () => {
   }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
 });
 document.querySelectorAll('#op_deuda button').forEach(b => b.addEventListener('click', () => { opDeuda = b.dataset.d === 'si'; pintarDeuda(); }));
-$('#opCancelar').addEventListener('click', () => { $('#formOptica').hidden = true; });
+$('#opCancelar').addEventListener('click', () => { vincularCita = null; $('#formOptica').hidden = true; });
 $('#formOpticaForm').addEventListener('submit', e => {
   e.preventDefault();
   const v = id => $(id).value.trim();
@@ -1573,11 +1626,13 @@ $('#formOpticaForm').addEventListener('submit', e => {
     referencia: v('#op_ref'), lat: opUbic ? opUbic.lat || '' : '', lng: opUbic ? opUbic.lng || '' : '', mapsUrl: opUbic ? opUbic.mapsUrl || '' : '',
     direccion: opUbic ? opUbic.direccion || '' : '', creado: previa ? previa.creado : new Date().toISOString() };
   guardarTabla('opticas', o, true);
+  if (vincularCita) { const c = citas.find(x => x.id === vincularCita); vincularCita = null; if (c) guardarCita({ ...c, opticaId: o.id }); }
   const meta = opDeuda ? Math.round(Number(v('#op_saldo')) * 100) / 100 : 0, actual = previa ? saldoDe(previa) : 0;
   if (Math.abs(meta - actual) >= 0.01) registrarMov(o.id, meta - actual, previa ? 'ajuste' : 'inicial', '');
   else enviarPendientes();
   $('#formOptica').hidden = true; toast('Óptica guardada');
-  if (!$('#ficha').hidden || previa) verFicha(o.id); else render();
+  if (detalleId && !$('#detalle').hidden) { render(); verDetalle(detalleId); }
+  else if (!$('#ficha').hidden || previa) verFicha(o.id); else render();
 });
 $('#opBorrar').addEventListener('click', () => {
   const b = $('#opBorrar');
@@ -1609,7 +1664,7 @@ function pedirCobro(c, o) {
   cobroCita = { c, o };
   $('#cobroTxt').textContent = `¿Cuánto le cobró a ${o.nombre}?`;
   $('#cobro_monto').value = c.monto || '';
-  $('#cobroSheet').hidden = false;
+  $('#cobroSheet').hidden = false; alFrente($('#cobroSheet'));
 }
 async function terminarCobro(cobrado) {
   const { c, o } = cobroCita; cobroCita = null; $('#cobroSheet').hidden = true;
@@ -1649,7 +1704,7 @@ function abrir(c) {
   $('#btnBorrar').hidden = !c; $('#btnBorrar').classList.remove('seguro'); $('#btnBorrar').textContent = '🗑 Borrar esta cita';
   marcarRapida();
   elegirTipo(c ? c.tipo : '');
-  $('#modal').hidden = false; $('#modal').scrollTop = 0;
+  $('#modal').hidden = false; alFrente($('#modal')); $('#modal').scrollTop = 0;
 }
 const cerrar = () => { if (escuchando) { escuchando = false; try { reco && reco.abort(); } catch (e) {} pintarMic(); } $('#modal').hidden = true; };
 
@@ -2042,6 +2097,11 @@ $('#btnBorrar').addEventListener('click', async () => {
 
 /* ---------- acciones de cada cita ---------- */
 async function alTocar(e) {
+  const vi = e.target.closest('[data-vincular]');
+  if (vi) { const c = citas.find(x => x.id === vi.dataset.cita), o = tablas.opticas.find(x => x.id === vi.dataset.vincular);
+    if (c && o) { await guardarCita({ ...c, opticaId: o.id }); toast('Cita unida a ' + o.nombre); verDetalle(c.id); } return; }
+  const nc = e.target.closest('[data-op-nueva-cita]');
+  if (nc) { const c = citas.find(x => x.id === nc.dataset.opNuevaCita); if (c) { vincularCita = c.id; abrirOptica(null); $('#op_dueno').value = c.cliente; $('#op_ciudad').value = c.ciudad || ''; } return; }
   if (e.target.closest('[data-sonido]')) { const on = !sonidoBienvenida(); try { localStorage.setItem('agenda_sonido_bienvenida', on ? '1' : '0'); } catch (er) {} if (on) tonoBienvenida(); render(); toast(on ? 'Sonido al abrir encendido' : 'Sonido al abrir apagado', 2000); return; }
   const ird = e.target.closest('[data-ir-dia]');
   if (ird) {
