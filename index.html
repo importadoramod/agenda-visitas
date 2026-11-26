@@ -426,6 +426,17 @@ header{background:transparent;border-bottom:0}
 .acc a.btnlink.contacto svg{width:20px;height:20px}
 .acc .sin-tel{flex-basis:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line);border-radius:14px;background:transparent;color:var(--muted,#999);font-size:15px}
 .acc .sin-tel svg{width:18px;height:18px}
+/* Botones compactos en la tarjeta de cita: Cómo llegar · Llamar · WhatsApp en una sola fila */
+.card.cita .acc{gap:6px}
+.card.cita .acc a.btnlink{flex:1 1 0;min-height:42px;font-size:14px;border-radius:12px;padding:0 4px;white-space:nowrap}
+.card.cita .acc a.btnlink svg{width:15px;height:15px;margin-right:4px}
+.card.cita .acc button{min-height:44px;font-size:15px;border-radius:12px}
+.card.cita .acc .sin-tel{flex:2 1 0;min-height:42px;font-size:13px}
+.card.cita .acc .encal{flex-basis:100%;font-size:13px}
+/* Botón Nueva cita: pastilla pequeña abajo a la derecha */
+#nueva{left:auto;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+#nueva span{display:flex;align-items:center;justify-content:center;max-width:none;margin:0!important;width:58px;height:58px;min-height:0;line-height:1;padding:0;font-size:34px;font-weight:400;border-radius:50%}
+@media (min-width:760px){#nueva{right:calc(50% - 364px)}}
 /* semana y mini calendario */
 .semana{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:16px}
 .dia-s{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:14px;border:1px solid var(--line);background:var(--vidrio);color:var(--ink);min-height:62px}
@@ -511,7 +522,7 @@ h2{letter-spacing:.1em}
   <div id="lista"><p class="vacio">Abriendo la agenda…</p></div>
 </main>
 
-<button id="nueva" aria-label="Nueva cita"><span>＋ Nueva cita</span></button>
+<button id="nueva" aria-label="Nueva cita" title="Nueva cita"><span>＋</span></button>
 
 <div id="modal" hidden>
   <form id="form" autocomplete="off" novalidate>
@@ -1117,7 +1128,7 @@ function miniCalHTML() {
 function contactoCita(c, o) {
   const tel = (o && o.telefono) || c.telefono || '';
   if (telDigitos(tel).length >= 7) return `<a class="btnlink contacto" href="tel:${telDigitos(tel)}">${ICO.tel} Llamar</a><a class="btnlink contacto wa" href="${esc(urlWhats(tel))}" target="_blank" rel="noopener">${ICO.wa} WhatsApp</a>`;
-  return o ? `<button type="button" class="sin-tel" data-op-tel="${o.id}">${ICO.tel} Agregar teléfono para Llamar y WhatsApp</button>` : '';
+  return o ? `<button type="button" class="sin-tel" data-op-tel="${o.id}">${ICO.tel} Agregar teléfono</button>` : '';
 }
 function card(c) {
   const det = c.tipo === 'venta'
@@ -1157,7 +1168,7 @@ function render() {
   const fl = fechaLarga(h); $('#hoyTxt').textContent = fl.charAt(0).toUpperCase() + fl.slice(1);
   $('#cajaBuscar').hidden = !(vista === 'todas' || vista === 'opticas' || (vista === 'mes' && calModo === 'lista'));
   $('#buscar').placeholder = vista === 'opticas' ? 'Buscar óptica…' : 'Buscar cliente o ciudad';
-  $('#nueva span').textContent = vista === 'opticas' ? '＋ Nueva óptica' : '＋ Nueva cita';
+  $('#nueva span').textContent = '＋'; $('#nueva').setAttribute('aria-label', vista === 'opticas' ? 'Nueva óptica' : 'Nueva cita'); $('#nueva').title = $('#nueva').getAttribute('aria-label');
   let html = '';
   if (vista === 'hoy') {
     const atr = citas.filter(c => pend(c) && c.fecha < h).sort(orden);
@@ -1172,7 +1183,7 @@ function render() {
     if (ruta) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">${ICO.pin} Ver la ruta de hoy en Google Maps</a>`;
     if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2><div class="lista">' + atr.map(card).join('') + '</div>';
     html += '<h2>Visitas de hoy</h2>' + (hoy.length ? '<div class="lista">' + hoy.map(card).join('') + '</div>'
-      : '<p class="vacio">No hay visitas para hoy. Toque <b>Nueva cita</b> para anotar una.</p>');
+      : '<p class="vacio">No hay visitas para hoy. Toque el botón <b>＋</b> de abajo a la derecha para anotar una.</p>');
     const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden).slice(0, 3);
     if (prox.length) html += '<h2>Próximas visitas</h2><div class="lista">' + prox.map(card).join('') + '</div>';
   } else if (vista === 'proximas') {
