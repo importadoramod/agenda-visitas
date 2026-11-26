@@ -479,6 +479,7 @@ header{background:transparent;border-bottom:0}
 .redondo small{font-size:13px;color:var(--muted)}
 .redondo.off{opacity:.35}
 .op-ver{margin-top:12px;width:100%;min-height:46px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:16px}
+.op-btns{display:flex;gap:8px;margin-top:12px}.op-btns .op-ver{margin-top:0;flex:1}
 .op .op-cab .cn{font-size:21px}
 .spark{display:block;width:100%;height:34px;margin-top:6px;color:var(--coral)}
 /* buscador */
@@ -1570,7 +1571,7 @@ function opticasHTML() {
       <button class="op-cab" data-op-ver="${o.id}"><span class="cn">${esc(o.nombre)}</span>${pildoraDeuda(o)}</button>
       <div class="op-sub">${ICO.pin}<span>${esc([o.dueno, o.ciudad].filter(Boolean).join(' · ') || 'Sin datos')}${o.vendedor ? ' · 🧑‍💼 ' + esc(o.vendedor) : ''}</span></div>
       ${accionesRedondas(o)}
-      <button class="op-ver" data-op-ver="${o.id}">Ver ficha ›</button></article>`).join('') + '</div>';
+      <div class="op-btns"><button class="op-ver op-edit" data-op-editar="${o.id}">✏️ Editar</button><button class="op-ver" data-op-ver="${o.id}">Ver ficha ›</button></div></article>`).join('') + '</div>';
   return h;
 }
 function clientesSinFicha() {
@@ -2241,6 +2242,7 @@ async function alTocar(e) {
   if (e.target.closest('[data-op-importar]')) { importarClientes(); return; }
   const ot = e.target.closest('[data-op-tel]'); if (ot) { abrirOptica(tablas.opticas.find(x => x.id === ot.dataset.opTel)); setTimeout(() => $('#op_tel').focus(), 150); return; }
   const ms = e.target.closest('[data-ms]'); if (ms) { mesStats = mesMas(mesStats || mesDe(hoyISO()), Number(ms.dataset.ms)); render(); return; }
+  const oe = e.target.closest('[data-op-editar]'); if (oe && !e.target.closest('#fichaCont')) { abrirOptica(tablas.opticas.find(x => x.id === oe.dataset.opEditar)); return; }
   const vo = e.target.closest('[data-op-ver]'); if (vo) { verFicha(vo.dataset.opVer); return; }
   const bp = e.target.closest('button[data-p]');
   if (bp) { periodo = bp.dataset.p; despl = 0; render(); return; }
