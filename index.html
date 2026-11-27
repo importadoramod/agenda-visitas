@@ -287,9 +287,17 @@ h1{font-size:20px;font-weight:600}
 #btnLetra{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:500;min-height:47px;min-width:58px}
 #btnLetra[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .top-btns{display:flex;gap:8px;align-items:center;flex:none}
-#btnRecargar{flex:none;min-height:47px;min-width:58px;padding:4px 8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
-#btnRecargar svg{width:22px;height:22px}
-#btnRecargar small{font-size:10px;line-height:1}
+#btnRecargar,#btnAjustesTop{flex:none;min-height:47px;min-width:58px;padding:4px 8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+#btnRecargar svg,#btnAjustesTop svg{width:22px;height:22px}
+#btnRecargar small,#btnAjustesTop small{font-size:10px;line-height:1}
+.top-btns{gap:6px}
+header .top{flex-wrap:wrap}
+header .top .marca{flex:1 1 auto;min-width:0}
+.top-btns{flex-basis:100%;justify-content:flex-end;margin-top:10px}
+#btnRecargar,#btnAjustesTop{flex-direction:row;gap:6px;min-height:42px;padding:0 12px}
+#btnRecargar small,#btnAjustesTop small{font-size:14px}
+#btnRecargar svg,#btnAjustesTop svg{width:19px;height:19px}
+.top-btns #btnLetra{min-height:42px;min-width:54px}
 #btnRecargar.girando svg{animation:girar .8s linear infinite}
 @keyframes girar{to{transform:rotate(360deg)}}
 nav{background:var(--soft);border-radius:16px;padding:4px;gap:4px;margin-top:16px}
@@ -531,6 +539,7 @@ h2{letter-spacing:.1em}
   <div class="top">
     <div class="marca"><img class="logo" src="icon-192.png?v=2" alt="MOD" width="56" height="56"><div><h1><span class="acento">Agenda</span> de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
     <div class="top-btns"><button id="btnRecargar" aria-label="Actualizar la agenda" title="Actualizar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><small>Actualizar</small></button>
+    <button id="btnAjustesTop" class="btnTop" data-ajustes="1" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><small>Ajustes</small></button>
     <button id="btnLetra" aria-pressed="false" aria-label="Letra más grande">A<span>A</span></button></div>
   </div>
   <nav>
@@ -2297,6 +2306,7 @@ async function alTocar(e) {
 }
 $('#lista').addEventListener('click', alTocar);
 $('#detCard').addEventListener('click', alTocar);
+$('#btnAjustesTop').addEventListener('click', () => abrirAjustes());
 $('#detCerrar').addEventListener('click', () => { $('#detalle').hidden = true; detalleId = null; porBorrar = null; });
 
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
