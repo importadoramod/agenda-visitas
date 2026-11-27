@@ -681,7 +681,7 @@ header h1{font-size:20px;line-height:1.15}
 .sin-hoy{margin-top:16px;text-align:center;padding:26px 18px;border:1px dashed var(--line);border-radius:22px;background:var(--surface)}
 .sh-ico{font-size:40px;line-height:1;margin-bottom:8px}
 .sin-hoy b{display:block;font-family:var(--f-display);font-size:22px}
-.sin-hoy p{margin:8px 0 16px;color:var(--muted);font-size:16px}
+.sin-hoy p{margin:8px 0 0;color:var(--muted);font-size:16px}
 .sh-btn{min-height:50px;padding:0 22px;border:0;border-radius:99px;background:linear-gradient(90deg,var(--coral),var(--coral2));color:#fff;font-weight:700;font-size:17px}
 .filas-c{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .fc{display:grid;grid-template-columns:72px 1fr auto 16px;align-items:center;gap:10px;width:100%;min-height:62px;padding:8px 14px;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);text-align:left}
@@ -1486,7 +1486,6 @@ function render() {
       <div class="sh-ico" aria-hidden="true">☕</div>
       <b>${hoy.length ? 'Ya terminó las citas de hoy' : 'No tienes citas para hoy'}</b>
       ${prox[0] ? `<p>La próxima es el ${fechaLarga(prox[0].fecha)}${prox[0].hora ? ' a las ' + horaTxt(prox[0].hora) : ''} · ${esc(nombreCita(prox[0]))}</p>` : '<p>Tampoco hay citas en los próximos días.</p>'}
-      <button type="button" class="sh-btn" data-agendar="1">＋ Agendar una cita</button>
     </section>`;
     const ruta = urlRutaHoy();
     if (ruta && sigHoy) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">${ICO.pin} Ver la ruta de hoy en Google Maps</a>`;
