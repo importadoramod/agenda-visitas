@@ -285,13 +285,30 @@ function sincronizar_(c) {
   }
   ev.setDescription(detalle);
   ev.setLocation(c.ciudad || '');
-  ev.removeAllReminders();
-  if (c.estado !== 'hecho') {
-    if (c.hora) { ev.addPopupReminder(60); ev.addPopupReminder(15); }
-    else ev.addPopupReminder(300); // 19:00 de la noche anterior
-  }
+  alarmas_(ev, c);
   c.calId = calId;
   c.eventId = ev.getId();
+}
+
+// Dos alarmas: 24 horas antes y 1 hora antes. Sin hora (todo el día): el día anterior a las 9:00 y a las 19:00.
+function alarmas_(ev, c) {
+  ev.removeAllReminders();
+  if (c.estado === 'hecho') return;
+  if (c.hora) { ev.addPopupReminder(24 * 60); ev.addPopupReminder(60); }
+  else { ev.addPopupReminder(15 * 60); ev.addPopupReminder(5 * 60); }
+}
+
+// Ejecutar UNA vez desde el editor: pone las dos alarmas nuevas a las citas que ya estaban en el calendario.
+function actualizarAlarmas() {
+  const tz = Session.getScriptTimeZone();
+  const hoy = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  let n = 0;
+  leerCitas_().forEach(c => {
+    if (!c.eventId || c.fecha < hoy || c.estado === 'hecho') return;
+    const ev = buscarEvento_(c.calId || PROPS.getProperty('CAL_ID') || '', c.eventId);
+    if (ev) { alarmas_(ev, c); n++; }
+  });
+  Logger.log('Listo: ' + n + ' citas con alarma 24 horas antes y 1 hora antes.');
 }
 
 /* ===================== dictado con IA (opcional) ===================== */

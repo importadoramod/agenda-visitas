@@ -1165,12 +1165,14 @@ function pitar() {
 }
 function revisarAlarmas() {
   const ahora = new Date(), h = hoyISO();
-  citas.filter(c => pend(c) && c.fecha === h && c.hora).forEach(c => {
-    const [hh, mm] = c.hora.split(':').map(Number);
-    const falta = Math.round((new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), hh, mm) - ahora) / 60000);
+  const manana = sumarDias(h, 1);
+  citas.filter(c => pend(c) && (c.fecha === h || c.fecha === manana) && c.hora).forEach(c => {
+    const [y, mo, d] = c.fecha.split('-').map(Number), [hh, mm] = c.hora.split(':').map(Number);
+    const falta = Math.round((new Date(y, mo - 1, d, hh, mm) - ahora) / 60000);
     let clave = null, txt = '';
-    if (falta <= 30 && falta > 0) { clave = c.id + ':antes'; txt = `En ${falta} minutos: ${c.cliente} en ${c.ciudad}`; }
-    else if (falta <= 0 && falta > -15) { clave = c.id + ':ahora'; txt = `Es la hora: ${c.cliente} en ${c.ciudad}`; }
+    const lugar = c.cliente + (c.ciudad ? ' en ' + c.ciudad : '');
+    if (falta <= 24 * 60 && falta > 23 * 60) { clave = c.id + ':24h'; txt = `Mañana a las ${horaTxt(c.hora)}: ${lugar}`; }
+    else if (falta <= 60 && falta > 0) { clave = c.id + ':1h'; txt = `En ${falta} minutos: ${lugar}`; }
     if (clave && !avisadas.has(clave)) {
       avisadas.add(clave);
       txt += c.tipo === 'cobro' ? ` · cobrar ${money(c.monto)}` : ` · llevar ${c.mercaderia}`;
