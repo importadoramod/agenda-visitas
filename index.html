@@ -660,6 +660,20 @@ header h1{font-size:20px;line-height:1.15}
 .f-pie #btnGuardar{flex:2;background:linear-gradient(90deg,var(--coral),var(--coral2));color:#fff;border:0;font-weight:700}
 #btnBorrar{margin:10px 0 18px;background:transparent;border:0;color:var(--coral2);text-decoration:underline;font-size:15px;min-height:44px}
 @media (max-width:520px){.f-pie{margin:0 -14px;padding-left:14px;padding-right:14px;border-radius:0 0 20px 20px}}
+
+/* Lista de ópticas en la cita */
+.op-combo{position:relative}
+.op-combo #f_optica{padding-right:48px;width:100%}
+#opFlecha{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:transparent;color:var(--muted);font-size:20px}
+.op-lista{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:10;max-height:320px;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 40px rgb(0 0 0 / .3);padding:6px}
+.op-it{display:grid;grid-template-columns:1fr auto;gap:0 8px;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:12px;background:transparent;color:var(--ink);min-height:54px}
+.op-it:hover,.op-it:focus-visible{background:var(--soft)}
+.op-it.sel{background:color-mix(in srgb,var(--coral) 12%,var(--surface))}
+.op-it-n{font-weight:700;font-size:17px}
+.op-it-s{grid-column:1;color:var(--muted);font-size:14px}
+.op-it-d{grid-row:1 / span 2;grid-column:2;align-self:center;font-size:13px;color:var(--coral2);font-weight:600}
+.op-vacio{margin:8px 12px;color:var(--muted);font-size:15px}
+.op-crear{width:100%;min-height:50px;margin-top:4px;border:1px dashed var(--coral);border-radius:12px;background:transparent;color:var(--coral);font-weight:700;font-size:16px;text-align:left;padding:0 14px}
 </style>
 </head>
 <body>
@@ -716,7 +730,11 @@ header h1{font-size:20px;line-height:1.15}
 
     <div class="f-sec">
       <label for="f_optica">Óptica <small>(opcional)</small></label>
-      <input id="f_optica" list="opticasLista" placeholder="Escriba el nombre de la óptica" autocomplete="off">
+      <div class="op-combo">
+        <input id="f_optica" placeholder="Toque para elegir o escriba" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="opLista">
+        <button type="button" id="opFlecha" tabindex="-1" aria-label="Ver todas las ópticas">▾</button>
+        <div id="opLista" class="op-lista" role="listbox" hidden></div>
+      </div>
       <datalist id="opticasLista"></datalist>
       <p class="ayuda" id="opticaEstado"></p>
       <div class="f-dos">
@@ -1931,7 +1949,7 @@ $('#btnGps').addEventListener('click', () => {
   }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
 });
 document.querySelectorAll('#op_deuda button').forEach(b => b.addEventListener('click', () => { opDeuda = b.dataset.d === 'si'; pintarDeuda(); }));
-$('#opCancelar').addEventListener('click', () => { vincularCita = null; $('#formOptica').hidden = true; });
+$('#opCancelar').addEventListener('click', () => { vincularCita = null; crearDesdeCita = false; $('#formOptica').hidden = true; });
 $('#formOpticaForm').addEventListener('submit', e => {
   e.preventDefault();
   const v = id => $(id).value.trim();
@@ -1945,6 +1963,7 @@ $('#formOpticaForm').addEventListener('submit', e => {
     direccion: opUbic ? opUbic.direccion || '' : '', creado: previa ? previa.creado : new Date().toISOString() };
   guardarTabla('opticas', o, true);
   if (vincularCita) { const c = citas.find(x => x.id === vincularCita); vincularCita = null; if (c) guardarCita({ ...c, opticaId: o.id }); }
+  if (crearDesdeCita) { crearDesdeCita = false; if (!$('#modal').hidden) { ponerOpticaEnCita(tablas.opticas.find(x => x.id === o.id) || o, true); toast('Óptica creada y elegida para la cita'); } }
   const meta = opDeuda ? Math.round(Number(v('#op_saldo')) * 100) / 100 : 0, actual = previa ? saldoDe(previa) : 0;
   if (Math.abs(meta - actual) >= 0.01) registrarMov(o.id, meta - actual, previa ? 'ajuste' : 'inicial', '');
   else enviarPendientes();
@@ -1974,8 +1993,41 @@ function ponerOpticaEnCita(o, rellenar) {
 $('#f_optica').addEventListener('input', () => {
   const n = normalTxt($('#f_optica').value);
   const o = n ? tablas.opticas.find(x => normalTxt(x.nombre) === n) : null;
-  if (o) ponerOpticaEnCita(o, true); else { opticaSel = ''; $('#opticaEstado').textContent = n ? 'No está en sus ópticas (se guarda solo como nombre).' : ''; }
+  if (o) ponerOpticaEnCita(o, true); else { opticaSel = ''; $('#opticaEstado').textContent = n ? 'No está en sus ópticas. Elíjala de la lista o créela.' : ''; }
+  pintarOpLista(true);
 });
+/* Lista desplegable de ópticas en el formulario de cita */
+let crearDesdeCita = false;
+function pintarOpLista(abrir) {
+  const q = normalTxt($('#f_optica').value), lista = $('#opLista');
+  const sel = opticaSel && tablas.opticas.find(o => o.id === opticaSel);
+  const todas = tablas.opticas.slice().sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  const filtro = sel && normalTxt(sel.nombre) === q ? todas : todas.filter(o => !q || normalTxt([o.nombre, o.dueno, o.ciudad].join(' ')).includes(q));
+  const txt = $('#f_optica').value.trim();
+  lista.innerHTML = (filtro.length ? filtro.map(o => `<button type="button" role="option" class="op-it ${o.id === opticaSel ? 'sel' : ''}" data-op-elegir="${o.id}">
+      <span class="op-it-n">${esc(o.nombre)}</span><span class="op-it-s">${esc([o.dueno, o.ciudad].filter(Boolean).join(' · ') || 'Sin datos')}</span>${saldoDe(o) > 0 ? `<span class="op-it-d">Debe ${money(saldoDe(o))}</span>` : ''}</button>`).join('')
+    : `<p class="op-vacio">${tablas.opticas.length ? 'Ninguna óptica coincide.' : 'Todavía no tiene ópticas registradas.'}</p>`)
+    + `<button type="button" class="op-crear" data-op-crear="1">＋ Crear nueva óptica${txt && !(sel && sel.nombre === txt) ? ` «${esc(txt)}»` : ''}</button>`;
+  if (abrir) { lista.hidden = false; $('#f_optica').setAttribute('aria-expanded', 'true'); }
+}
+const cerrarOpLista = () => { $('#opLista').hidden = true; $('#f_optica').setAttribute('aria-expanded', 'false'); };
+$('#f_optica').addEventListener('focus', () => pintarOpLista(true));
+$('#f_optica').addEventListener('click', () => pintarOpLista(true));
+$('#opFlecha').addEventListener('click', () => { if ($('#opLista').hidden) { pintarOpLista(true); } else cerrarOpLista(); });
+$('#opLista').addEventListener('mousedown', e => e.preventDefault()); // que no se pierda el foco antes del toque
+$('#opLista').addEventListener('click', e => {
+  const b = e.target.closest('[data-op-elegir]');
+  if (b) { ponerOpticaEnCita(tablas.opticas.find(o => o.id === b.dataset.opElegir), true); cerrarOpLista(); return; }
+  if (e.target.closest('[data-op-crear]')) {
+    const txt = $('#f_optica').value.trim(); cerrarOpLista(); crearDesdeCita = true; abrirOptica(null);
+    $('#op_nombre').value = opticaSel ? '' : txt;
+    if (!$('#op_ciudad').value) $('#op_ciudad').value = $('#f_ciudad').value.trim();
+    if (!$('#op_dueno').value) $('#op_dueno').value = $('#f_cliente').value.trim();
+    setTimeout(() => $('#op_nombre').focus(), 150);
+  }
+});
+document.addEventListener('click', e => { if (!e.target.closest('.op-combo')) cerrarOpLista(); });
+$('#f_optica').addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#opLista').hidden) { e.stopPropagation(); cerrarOpLista(); } });
 
 /* Cobro al marcar «Ya fui» */
 function pedirCobro(c, o) {
