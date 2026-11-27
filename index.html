@@ -453,6 +453,12 @@ header{background:transparent;border-bottom:0}
 .card.cita .acc button{min-height:44px;font-size:15px;border-radius:12px}
 .card.cita .acc .sin-tel{flex:2 1 0;min-height:42px;font-size:13px}
 .card.cita .acc .encal{flex-basis:100%;font-size:13px}
+.card.cita .acc .registrar{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:0;border-radius:14px;background:#1f9d55;color:#fff;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgb(31 157 85 / .3)}
+.card.cita .acc .registrar svg,.card.cita .acc .visitada svg{width:20px;height:20px}
+.card.cita .acc .visitada{flex:1 1 0;display:flex;align-items:center;gap:6px;min-height:48px;padding:0 12px;border-radius:14px;background:var(--verde-bg);color:var(--verde);font-weight:700;font-size:15px}
+.card.cita .acc .deshacer{flex:none;min-height:48px;padding:0 12px;border:0;background:transparent;color:var(--muted);font-size:14px;text-decoration:underline}
+.card.cita .acc .editar-ico{flex:none;width:48px;min-height:48px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink)}
+.card.cita .acc .editar-ico svg{width:21px;height:21px}
 .mes-stats{margin:16px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px}
 .ms-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .ms-cab b{font-family:var(--f-head,inherit);font-size:18px}
@@ -1175,6 +1181,8 @@ function miniCalHTML() {
   return h + '</div></div>';
 }
 
+const ICO_OK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICO_EDIT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M13.5 6.5l4 4" stroke="currentColor" stroke-width="2"/></svg>';
 function contactoCita(c, o) {
   const tel = (o && o.telefono) || c.telefono || '';
   if (telDigitos(tel).length >= 7) return `<a class="btnlink contacto" href="tel:${telDigitos(tel)}">${ICO.tel} Llamar</a><a class="btnlink contacto wa" href="${esc(urlWhats(tel))}" target="_blank" rel="noopener">${ICO.wa} WhatsApp</a>`;
@@ -1200,8 +1208,10 @@ function card(c) {
       ${o && tieneUbic(o) ? `<a class="btnlink llegar" href="${esc(urlLlegar(o))}" target="_blank" rel="noopener">${ICO.pin} Cómo llegar</a>` : ''}
       ${contactoCita(c, o)}
       ${c.eventId ? `<span class="encal">📅 Alarma puesta en Google Calendar</span>` : c._pend ? `<span class="encal">⏳ Guardando…</span>` : ''}
-      <button class="ok" data-a="marcar" data-id="${c.id}">${c.estado === 'hecho' ? '↩ No fui' : '✓ Ya fui'}</button>
-      <button data-a="editar" data-id="${c.id}">✏️ Cambiar</button>
+      ${c.estado === 'hecho'
+        ? `<span class="visitada">${ICO_OK} Visita realizada</span><button class="deshacer" data-a="marcar" data-id="${c.id}">Deshacer</button>`
+        : `<button class="registrar" data-a="marcar" data-id="${c.id}">${ICO_OK} ${c.tipo === 'cobro' ? 'Registrar cobro' : c.tipo === 'venta' ? 'Registrar venta' : 'Marcar visitada'}</button>`}
+      <button class="editar-ico" data-a="editar" data-id="${c.id}" aria-label="Editar cita" title="Editar cita">${ICO_EDIT}</button>
     </div></article>`;
 }
 function porDia(lista) {
@@ -1462,7 +1472,7 @@ function bloqueOptica(c) {
     .filter(y => y.p > 0).sort((a, b) => b.p - a.p).slice(0, 3).map(y => y.x);
   return `<section class="op-caja det-op">
       <p class="aj-et">Esta cita no está unida a una óptica</p>
-      <p class="ayuda">${sug.length ? '¿Es alguna de estas? Tóquela para ver su ubicación, teléfono y deuda:' : 'Elija la óptica en «Cambiar», o cree su ficha:'}</p>
+      <p class="ayuda">${sug.length ? '¿Es alguna de estas? Tóquela para ver su ubicación, teléfono y deuda:' : 'Elija la óptica con el lápiz ✎ (editar), o cree su ficha:'}</p>
       ${sug.map(x => `<button class="aj-sec" data-vincular="${x.id}" data-cita="${c.id}">${esc(x.nombre)}${x.dueno ? ' · ' + esc(x.dueno) : ''}${x.ciudad ? ' · ' + esc(x.ciudad) : ''}</button>`).join('')}
       <button class="aj-sec" data-op-nueva-cita="${c.id}">＋ Crear ficha de óptica para este cliente</button>
     </section>`;
@@ -1840,7 +1850,7 @@ function urlRutaHoy() {
 
 function abrir(c) {
   editId = c ? c.id : null;
-  $('#tituloForm').textContent = c ? 'Cambiar cita' : 'Nueva cita';
+  $('#tituloForm').textContent = c ? 'Editar cita' : 'Nueva cita';
   $('#f_fecha').value = c ? c.fecha : hoyISO();
   $('#f_hora').value = c ? (c.hora || '') : '';
   $('#f_cliente').value = c ? c.cliente : '';
