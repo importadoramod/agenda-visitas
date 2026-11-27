@@ -459,6 +459,14 @@ header{background:transparent;border-bottom:0}
 .card.cita .acc .deshacer{flex:none;min-height:48px;padding:0 12px;border:0;background:transparent;color:var(--muted);font-size:14px;text-decoration:underline}
 .card.cita .acc .editar-ico{flex:none;width:48px;min-height:48px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink)}
 .card.cita .acc .editar-ico svg{width:21px;height:21px}
+/* Formulario de cita como ventana emergente */
+#modal{background:rgb(0 0 0 / .55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:max(5vh,calc(12px + env(safe-area-inset-top,0px))) 12px 5vh}
+#modal[hidden]{display:none}
+#modal #form{position:relative;width:100%;max-width:560px;margin:0;background:var(--bg);border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 60px rgb(0 0 0 / .35);padding:22px 18px 22px;animation:popIn .18s ease-out}
+#modal #form h3{padding-right:44px}
+.pop-x{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;z-index:2}
+@keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@media (max-width:520px){#modal{padding:max(3vh,calc(8px + env(safe-area-inset-top,0px))) 8px 3vh}#modal #form{border-radius:20px;padding:20px 14px}}
 .mes-stats{margin:16px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px}
 .ms-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .ms-cab b{font-family:var(--f-head,inherit);font-size:18px}
@@ -572,6 +580,7 @@ h2{letter-spacing:.1em}
 
 <div id="modal" hidden>
   <form id="form" autocomplete="off" novalidate>
+    <button type="button" id="modalX" class="pop-x" aria-label="Cerrar">✕</button>
     <h3 id="tituloForm">Nueva cita</h3>
     <div id="cajaVoz" class="voz">
       <label for="f_voz">Dictar la cita</label>
@@ -1867,6 +1876,7 @@ function abrir(c) {
   elegirTipo(c ? c.tipo : '');
   $('#modal').hidden = false; alFrente($('#modal')); $('#modal').scrollTop = 0;
 }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) cerrar(); });
 const cerrar = () => { if (escuchando) { escuchando = false; try { reco && reco.abort(); } catch (e) {} pintarMic(); } $('#modal').hidden = true; };
 
 $('#form').addEventListener('submit', async e => {
@@ -2340,6 +2350,7 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
 document.querySelectorAll('.tipos button').forEach(b => b.addEventListener('click', () => elegirTipo(b.dataset.t)));
 $('#nueva').addEventListener('click', () => { if (vista === 'opticas') { abrirOptica(null); return; } abrir(null); if (vista === 'mes' && foco && foco >= hoyISO()) $('#f_fecha').value = foco; });
 $('#btnCancelar').addEventListener('click', cerrar);
+$('#modalX').addEventListener('click', cerrar);
 $('#buscar').addEventListener('input', render);
 $('.b-lupa').innerHTML = ICO.lupa; $('#buscarMic').innerHTML = ICO.mic;
 (() => { // buscar por voz
