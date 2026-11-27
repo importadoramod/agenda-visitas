@@ -1151,6 +1151,33 @@ function linkCalendario(c) {
 // 2) Alarma en pantalla: con la agenda abierta, suena 30 min antes y a la hora de la cita.
 let audio = null, sonando = null;
 const avisadas = new Set();
+/* Alarma: el tono de marimba suave 3 veces, con vibración en cada una */
+let bufMarimba = null, fuentesAlarma = [];
+async function cargarMarimba() {
+  if (bufMarimba || !audio) return bufMarimba;
+  try { const r = await fetch('bienvenida.mp3'); bufMarimba = await audio.decodeAudioData(await r.arrayBuffer()); } catch (e) {}
+  return bufMarimba;
+}
+async function sonarAlarma() {
+  prepararSonido(); pararAlarma();
+  const VIB = [600, 250, 600, 1000, 600, 250, 600, 1000, 600, 250, 600];
+  try { navigator.vibrate && navigator.vibrate(VIB); } catch (e) {}
+  const b = await cargarMarimba();
+  if (b && audio) {
+    const t0 = audio.currentTime + 0.05, paso = b.duration + 0.45;
+    for (let i = 0; i < 3; i++) {
+      const src = audio.createBufferSource(), g = audio.createGain(); g.gain.value = 1;
+      src.buffer = b; src.connect(g).connect(audio.destination); src.start(t0 + i * paso); fuentesAlarma.push(src);
+    }
+  } else { // sin el archivo: tres pitidos de respaldo
+    pitar(); sonando = setTimeout(() => { pitar(); sonando = setTimeout(pitar, 2300); }, 2300);
+  }
+}
+function pararAlarma() {
+  fuentesAlarma.forEach(f => { try { f.stop(); } catch (e) {} }); fuentesAlarma = [];
+  clearTimeout(sonando); clearInterval(sonando);
+  try { navigator.vibrate && navigator.vibrate(0); } catch (e) {}
+}
 function pitar() {
   if (!audio) return;
   try {
@@ -1177,14 +1204,15 @@ function revisarAlarmas() {
       avisadas.add(clave);
       txt += c.tipo === 'cobro' ? ` · cobrar ${money(c.monto)}` : ` · llevar ${c.mercaderia}`;
       $('#alertaTxt').textContent = '⏰ ' + txt; $('#alerta').hidden = false;
-      prepararSonido(); pitar(); clearInterval(sonando); sonando = setInterval(pitar, 4000);
+      sonarAlarma();
     }
   });
 }
-$('#alertaOk').addEventListener('click', () => { $('#alerta').hidden = true; clearInterval(sonando); });
+$('#alertaOk').addEventListener('click', () => { $('#alerta').hidden = true; pararAlarma(); });
 // Alarma siempre activa: el navegador solo deja sonar después de un toque, así que el primer toque en cualquier parte la deja lista.
 function prepararSonido() {
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); if (audio.state !== 'running') audio.resume(); } catch (e) {}
+  cargarMarimba();
 }
 ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, prepararSonido, { capture: true, passive: true }));
 // Mantener la pantalla encendida mientras la agenda está abierta, para que la alarma no se pierda.
