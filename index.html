@@ -643,7 +643,9 @@ header h1{font-size:20px;line-height:1.15}
 .f-sec{border-top:1px solid var(--line);padding:4px 0 16px}
 .f-sec:first-of-type{border-top:0}
 .f-dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.f-dos>div{min-width:0}.f-dos input{width:100%;min-width:0}
+.f-dos>div{min-width:0}.f-dos input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.f-dos input[type=date],.f-dos input[type=time]{-webkit-appearance:none;appearance:none;display:block;text-align:left;min-height:52px}
+.f-dos input::-webkit-date-and-time-value{text-align:left}
 .f-sec .rapidas{margin-bottom:8px}
 .horas-rap{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none}
 .horas-rap button{flex:1 0 auto;min-height:40px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:15px}
@@ -738,7 +740,7 @@ header h1{font-size:20px;line-height:1.15}
       <datalist id="opticasLista"></datalist>
       <p class="ayuda" id="opticaEstado"></p>
       <div class="f-dos">
-        <div><label for="f_cliente">Cliente</label><input id="f_cliente" placeholder="Nombre"></div>
+        <div><label for="f_cliente">Cliente</label><input id="f_cliente" placeholder="Dueño o contacto"></div>
         <div><label for="f_ciudad">Ciudad</label><input id="f_ciudad" list="ciudades" placeholder="Ciudad"><datalist id="ciudades"></datalist></div>
       </div>
     </div>
@@ -1985,9 +1987,12 @@ function ponerOpticaEnCita(o, rellenar) {
   opticaSel = o ? o.id : '';
   $('#f_optica').value = o ? o.nombre : '';
   $('#opticaEstado').textContent = o ? `✓ Vinculada${tieneUbic(o) ? ' · tiene ubicación' : ''}${saldoDe(o) > 0 ? ' · debe ' + money(saldoDe(o)) : ''}` : '';
-  if (o && rellenar) {
-    if (!$('#f_cliente').value.trim()) $('#f_cliente').value = o.dueno ? `${o.nombre} - ${o.dueno}` : o.nombre;
+  if (o && rellenar === 'vacios') { // tras dictar: solo completa lo que falta
+    if (!$('#f_cliente').value.trim() && o.dueno) $('#f_cliente').value = o.dueno;
     if (!$('#f_ciudad').value.trim() && o.ciudad) $('#f_ciudad').value = o.ciudad;
+  } else if (o && rellenar) { // al elegir una óptica: se ponen sus datos; lo que no tenga queda en blanco
+    $('#f_cliente').value = o.dueno || '';
+    $('#f_ciudad').value = o.ciudad || '';
   }
 }
 $('#f_optica').addEventListener('input', () => {
@@ -2103,13 +2108,13 @@ const cerrar = () => { if (escuchando) { escuchando = false; try { reco && reco.
 $('#form').addEventListener('submit', async e => {
   e.preventDefault();
   const v = id => $(id).value.trim();
-  const falta = !v('#f_fecha') ? 'Falta la fecha.' : !v('#f_cliente') ? 'Falta el nombre del cliente.' : !v('#f_ciudad') ? 'Falta la ciudad.'
+  const falta = !v('#f_fecha') ? 'Falta la fecha.' : !v('#f_cliente') && !opticaSel ? 'Falta el nombre del cliente.' : !v('#f_ciudad') && !opticaSel ? 'Falta la ciudad.'
     : !tipoSel ? 'Toque Venta o Cobro.' : (tipoSel === 'venta' && !v('#f_merc')) ? 'Escriba qué mercadería va a llevar.'
     : (tipoSel === 'cobro' && !(Number(v('#f_monto')) > 0)) ? 'Escriba cuánto debe cobrar.' : '';
   if (falta) { $('#err').textContent = falta; return; }
   const previa = citas.find(x => x.id === editId);
   const c = {
-    id: editId || nuevoId(), fecha: v('#f_fecha'), hora: v('#f_hora'), cliente: v('#f_cliente'), ciudad: v('#f_ciudad'),
+    id: editId || nuevoId(), fecha: v('#f_fecha'), hora: v('#f_hora'), cliente: v('#f_cliente') || ((tablas.opticas.find(x => x.id === opticaSel) || {}).nombre || ''), ciudad: v('#f_ciudad'),
     tipo: tipoSel, mercaderia: tipoSel === 'venta' ? v('#f_merc') : '', monto: tipoSel === 'cobro' ? Math.round(Number(v('#f_monto')) * 100) / 100 : 0,
     nota: v('#f_nota'), estado: previa ? previa.estado : 'pendiente', creado: previa ? previa.creado : new Date().toISOString(),
     calId: previa ? (previa.calId || '') : '', eventId: previa ? (previa.eventId || '') : '',
@@ -2369,7 +2374,7 @@ function completarNota(d, texto) {
 }
 
 function aplicarDictado(r) {
-  setTimeout(() => { if (!opticaSel) { const o = opticaDe({ cliente: $('#f_cliente').value }); if (o) ponerOpticaEnCita(o, true); } }, 0);
+  setTimeout(() => { if (!opticaSel) { const o = opticaDe({ cliente: $('#f_cliente').value }); if (o) ponerOpticaEnCita(o, 'vacios'); } }, 0);
   if (r.fecha) $('#f_fecha').value = r.fecha;
   if (r.hora) $('#f_hora').value = r.hora;
   if (r.cliente) $('#f_cliente').value = r.cliente;
