@@ -294,9 +294,9 @@ h1{font-size:20px;font-weight:600}
 header .top{flex-wrap:wrap}
 header .top .marca{flex:1 1 auto;min-width:0}
 .top-btns{flex-basis:100%;justify-content:flex-end;margin-top:10px}
-#btnRecargar,#btnAjustesTop{flex-direction:row;gap:6px;min-height:42px;padding:0 12px}
-#btnRecargar small,#btnAjustesTop small{font-size:14px}
-#btnRecargar svg,#btnAjustesTop svg{width:19px;height:19px}
+#btnRecargar,#btnAjustesTop{min-height:46px;min-width:54px;padding:0}
+#btnRecargar svg,#btnAjustesTop svg{width:24px;height:24px}
+.top-btns #btnLetra{min-height:46px!important}
 .top-btns #btnLetra{min-height:42px;min-width:54px}
 #btnRecargar.girando svg{animation:girar .8s linear infinite}
 @keyframes girar{to{transform:rotate(360deg)}}
@@ -538,8 +538,8 @@ h2{letter-spacing:.1em}
 <header>
   <div class="top">
     <div class="marca"><img class="logo" src="icon-192.png?v=2" alt="MOD" width="56" height="56"><div><h1><span class="acento">Agenda</span> de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
-    <div class="top-btns"><button id="btnRecargar" aria-label="Actualizar la agenda" title="Actualizar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><small>Actualizar</small></button>
-    <button id="btnAjustesTop" class="btnTop" data-ajustes="1" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><small>Ajustes</small></button>
+    <div class="top-btns"><button id="btnRecargar" aria-label="Actualizar la agenda" title="Actualizar"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 0 1 13.66-5.66L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.66 5.66L4 15.5M4 20v-4.5h4.5"/></svg></button>
+    <button id="btnAjustesTop" class="btnTop" data-ajustes="1" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7 7 0 0 0-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 13.92 2h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.72 8.47a.48.48 0 0 0 .12.61l2.03 1.58a7.3 7.3 0 0 0 0 1.88l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg></button>
     <button id="btnLetra" aria-pressed="false" aria-label="Letra más grande">A<span>A</span></button></div>
   </div>
   <nav>
