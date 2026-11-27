@@ -676,6 +676,24 @@ header h1{font-size:20px;line-height:1.15}
 .op-it-d{grid-row:1 / span 2;grid-column:2;align-self:center;font-size:13px;color:var(--coral2);font-weight:600}
 .op-vacio{margin:8px 12px;color:var(--muted);font-size:15px}
 .op-crear{width:100%;min-height:50px;margin-top:4px;border:1px dashed var(--coral);border-radius:12px;background:transparent;color:var(--coral);font-weight:700;font-size:16px;text-align:left;padding:0 14px}
+
+/* Inicio: sin citas hoy y lista compacta */
+.sin-hoy{margin-top:16px;text-align:center;padding:26px 18px;border:1px dashed var(--line);border-radius:22px;background:var(--surface)}
+.sh-ico{font-size:40px;line-height:1;margin-bottom:8px}
+.sin-hoy b{display:block;font-family:var(--f-display);font-size:22px}
+.sin-hoy p{margin:8px 0 16px;color:var(--muted);font-size:16px}
+.sh-btn{min-height:50px;padding:0 22px;border:0;border-radius:99px;background:linear-gradient(90deg,var(--coral),var(--coral2));color:#fff;font-weight:700;font-size:17px}
+.filas-c{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.fc{display:grid;grid-template-columns:72px 1fr auto 16px;align-items:center;gap:10px;width:100%;min-height:62px;padding:8px 14px;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);text-align:left}
+.fc:first-child{border-top:0}
+.fc:active{background:var(--soft)}
+.fc-f b{display:block;font-size:15px}.fc-f small{display:block;font-size:13px;color:var(--muted)}
+.fc.atr .fc-f b{color:var(--coral2)}
+.fc-n{min-width:0}.fc-n b,.fc-n small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-n b{font-size:16px}.fc-n small{font-size:13px;color:var(--muted)}
+.fc .tag{font-size:11px}
+.fc-flecha{color:var(--muted);font-size:22px}
+.ver-todas{width:100%;margin-top:8px;min-height:46px;border:0;background:transparent;color:var(--coral);font-weight:600;font-size:16px}
 </style>
 </head>
 <body>
@@ -1391,6 +1409,19 @@ function cuandoTxt(c) {
   return `En ${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) + ' min' : ''}`;
 }
 let proximaId = null;
+const nombreCita = c => { const o = opticaDe(c); return o ? o.nombre : c.cliente; };
+const DIAS_SEM = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+function filasCompactas(lista, atrasadas) {
+  return '<div class="filas-c">' + lista.map(c => {
+    const [y, m, d] = c.fecha.split('-').map(Number), f = new Date(y, m - 1, d);
+    const manana = c.fecha === sumarDias(hoyISO(), 1);
+    return `<button type="button" class="fc ${atrasadas ? 'atr' : ''}" data-ver="${c.id}">
+      <span class="fc-f"><b>${manana ? 'Mañana' : DIAS_SEM[f.getDay()] + ' ' + d}</b><small>${c.hora ? horaTxt(c.hora) : 'sin hora'}</small></span>
+      <span class="fc-n"><b>${esc(nombreCita(c))}</b><small>${esc(c.ciudad || '')}</small></span>
+      <span class="tag ${c.tipo}">${c.tipo === 'venta' ? 'Venta' : 'Cobro'}</span><span class="fc-flecha" aria-hidden="true">›</span>
+    </button>`;
+  }).join('') + '</div>';
+}
 function card(c, extra) {
   const det = c.tipo === 'venta'
     ? `<div class="cd">Llevar: <span class="merc">${esc(c.mercaderia)}</span></div>`
@@ -1446,19 +1477,24 @@ function render() {
       ${cobrar > 0 ? ` Debe cobrar <b>${money(cobrar)}</b>.` : ''}</p>`;
     html += semanaHTML();
     // La próxima visita va arriba, grande: la de hoy que sigue; si no hay, la siguiente de otro día
-    const sigHoy = hoy.filter(pend).find(c => { const m = minutosHasta(c); return m === null || m > -15; }) || hoy.filter(pend)[0];
+    const pendHoy = hoy.filter(pend);
+    const sigHoy = pendHoy.find(c => { const m = minutosHasta(c); return m === null || m > -15; }) || pendHoy[0] || null;
     const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden);
-    const heroC = sigHoy || prox[0] || null; proximaId = heroC ? heroC.id : null;
-    if (heroC) html += '<div class="lista hero-caja">' + card(heroC, 'hero') + '</div>';
+    proximaId = sigHoy ? sigHoy.id : null;
+    if (sigHoy) html += '<div class="lista hero-caja">' + card(sigHoy, 'hero') + '</div>';
+    else html += `<section class="sin-hoy">
+      <div class="sh-ico" aria-hidden="true">☕</div>
+      <b>${hoy.length ? 'Ya terminó las citas de hoy' : 'No tienes citas para hoy'}</b>
+      ${prox[0] ? `<p>La próxima es el ${fechaLarga(prox[0].fecha)}${prox[0].hora ? ' a las ' + horaTxt(prox[0].hora) : ''} · ${esc(nombreCita(prox[0]))}</p>` : '<p>Tampoco hay citas en los próximos días.</p>'}
+      <button type="button" class="sh-btn" data-agendar="1">＋ Agendar una cita</button>
+    </section>`;
     const ruta = urlRutaHoy();
-    if (ruta) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">${ICO.pin} Ver la ruta de hoy en Google Maps</a>`;
-    const sin = l => l.filter(c => c.id !== proximaId);
-    if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2><div class="lista">' + atr.map(c => card(c)).join('') + '</div>';
-    const resto = sin(hoy);
-    html += '<h2>Visitas de hoy</h2>' + (resto.length ? '<div class="lista">' + resto.map(c => card(c)).join('') + '</div>'
-      : `<p class="vacio">${hoy.length ? 'No hay más visitas para hoy.' : 'No hay visitas para hoy. Toque el botón <b>＋</b> de abajo para anotar una.'}</p>`);
-    const prox3 = sin(prox).slice(0, 3);
-    if (prox3.length) html += '<h2>Próximas visitas</h2><div class="lista">' + prox3.map(c => card(c)).join('') + '</div>';
+    if (ruta && sigHoy) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">${ICO.pin} Ver la ruta de hoy en Google Maps</a>`;
+    const resto = hoy.filter(c => c.id !== proximaId);
+    if (resto.length) html += '<h2>Más visitas de hoy</h2><div class="lista">' + resto.map(c => card(c)).join('') + '</div>';
+    if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2>' + filasCompactas(atr, true);
+    if (prox.length) html += '<h2>Próximas visitas</h2>' + filasCompactas(prox.slice(0, 7))
+      + (prox.length > 7 ? `<button type="button" class="ver-todas" data-ver-cal="1">Ver todas (${prox.length}) en el calendario ›</button>` : '');
     html += resumenMesHTML();
   } else if (vista === 'proximas') {
     const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden);
@@ -2566,6 +2602,8 @@ async function alTocar(e) {
   if (bs) { foco = sumarDias(foco || hoyISO(), 7 * Number(bs.dataset.csem)); render(); return; }
   const bf = e.target.closest('[data-foco]');
   if (bf) { foco = bf.dataset.foco; render(); if (calModo === 'puntos') { const g = document.querySelector('#lista .ic-grupo'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); } return; }
+  if (e.target.closest('[data-agendar]')) { abrir(null); return; }
+  if (e.target.closest('[data-ver-cal]')) { $('#v_mes').click(); return; }
   const bv = e.target.closest('[data-ver]');
   if (bv) { porBorrar = null; verDetalle(bv.dataset.ver); return; }
   const b = e.target.closest('button[data-a]'); if (!b) return;
