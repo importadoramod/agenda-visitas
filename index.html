@@ -7,6 +7,7 @@
 <meta name="description" content="Citas de venta y cobro con alarma en Google Calendar.">
 <meta name="theme-color" content="#f6f5f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c0c0d" media="(prefers-color-scheme: dark)">
+<script>try { const t = localStorage.getItem('agenda_tema'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Agenda">
@@ -294,7 +295,12 @@ h1{font-size:20px;font-weight:600}
 header .top{flex-wrap:wrap}
 header .top .marca{flex:1 1 auto;min-width:0}
 .top-btns{flex-basis:100%;justify-content:flex-end;margin-top:10px}
-#btnRecargar,#btnAjustesTop{min-height:46px;min-width:54px;padding:0}
+#btnRecargar,#btnAjustesTop,#btnTema{min-height:46px;min-width:54px;padding:0}
+#btnTema{flex:none;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center}
+#btnTema svg{width:23px;height:23px}
+#btnTema .ico-sol{display:none}
+.oscuro #btnTema .ico-luna{display:none}
+.oscuro #btnTema .ico-sol{display:block;color:#f5c542}
 #btnRecargar svg,#btnAjustesTop svg{width:24px;height:24px}
 .top-btns #btnLetra{min-height:46px!important}
 .top-btns #btnLetra{min-height:42px;min-width:54px}
@@ -539,6 +545,7 @@ h2{letter-spacing:.1em}
   <div class="top">
     <div class="marca"><img class="logo" src="icon-192.png?v=2" alt="MOD" width="56" height="56"><div><h1><span class="acento">Agenda</span> de Visitas</h1><div id="hoyTxt"></div><div class="calActual" id="calActual"></div></div></div>
     <div class="top-btns"><button id="btnRecargar" aria-label="Actualizar la agenda" title="Actualizar"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 0 1 13.66-5.66L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.66 5.66L4 15.5M4 20v-4.5h4.5"/></svg></button>
+    <button id="btnTema" aria-label="Cambiar a modo nocturno" title="Modo nocturno / normal"><svg class="ico-luna" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.7 14.6A8.6 8.6 0 0 1 9.4 3.3a.6.6 0 0 0-.8-.7A9.6 9.6 0 1 0 21.4 15.4a.6.6 0 0 0-.7-.8z"/></svg><svg class="ico-sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.6" fill="currentColor"/><path d="M12 1.8v2.6M12 19.6v2.6M1.8 12h2.6M19.6 12h2.6M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M4.8 19.2l1.8-1.8M17.4 6.6l1.8-1.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
     <button id="btnAjustesTop" class="btnTop" data-ajustes="1" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7 7 0 0 0-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 13.92 2h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.72 8.47a.48.48 0 0 0 .12.61l2.03 1.58a7.3 7.3 0 0 0 0 1.88l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg></button>
     <button id="btnLetra" aria-pressed="false" aria-label="Letra más grande">A<span>A</span></button></div>
   </div>
@@ -2307,6 +2314,19 @@ async function alTocar(e) {
 $('#lista').addEventListener('click', alTocar);
 $('#detCard').addEventListener('click', alTocar);
 $('#btnAjustesTop').addEventListener('click', () => abrirAjustes());
+const temaOscuro = () => document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+function pintarTema() {
+  const o = temaOscuro(); document.documentElement.classList.toggle('oscuro', o);
+  $('#btnTema').setAttribute('aria-label', o ? 'Cambiar a modo normal' : 'Cambiar a modo nocturno');
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', o ? '#0c0c0d' : '#f6f5f4'));
+}
+$('#btnTema').addEventListener('click', () => {
+  const t = temaOscuro() ? 'light' : 'dark'; document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('agenda_tema', t); } catch (e) {}
+  pintarTema(); toast(t === 'dark' ? 'Modo nocturno' : 'Modo normal', 1500);
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', pintarTema);
+pintarTema();
 $('#detCerrar').addEventListener('click', () => { $('#detalle').hidden = true; detalleId = null; porBorrar = null; });
 
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
