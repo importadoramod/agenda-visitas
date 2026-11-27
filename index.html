@@ -618,6 +618,48 @@ header h1{font-size:20px;line-height:1.15}
 @keyframes trazo{to{stroke-dashoffset:0}}
 #listoPop b{color:var(--ink);font-size:21px;font-family:var(--f-display)}
 #listoPop small{color:var(--muted);font-size:15px}
+
+/* ===== Formulario de cita, versión ordenada ===== */
+#modal #form{display:flex;flex-direction:column;gap:0;padding-bottom:0}
+#modal #form h3{margin:0 0 14px;font-size:24px}
+#modal #form label{margin-top:12px}
+#modal #form label small{color:var(--muted);font-weight:400}
+#cajaVoz{background:linear-gradient(160deg,color-mix(in srgb,var(--coral) 10%,var(--surface)),var(--surface));border:1px solid color-mix(in srgb,var(--coral) 30%,var(--line));border-radius:20px;padding:14px;margin:0}
+.voz-fila{display:flex;align-items:center;gap:14px}
+#btnMic{flex:none;width:76px;height:76px;min-height:0;padding:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;box-shadow:0 8px 22px -6px color-mix(in srgb,var(--coral) 70%,transparent);background:linear-gradient(140deg,var(--coral),var(--coral2));color:#fff}
+#btnMic .mic-i{font-size:26px;line-height:1}
+#btnMic.on{background:var(--ink);color:var(--bg)}
+.voz-tit{font-family:var(--f-display);font-size:18px}
+.voz-fila .ayuda{margin:2px 0 0;font-size:14px}
+#cajaVoz #f_voz,#cajaVoz #btnVoz{display:none}
+#cajaVoz.con-texto #f_voz,#cajaVoz.con-texto #btnVoz{display:block}
+#cajaVoz #f_voz{margin-top:12px}
+.voz-link{border:0;background:transparent;padding:4px 0;min-height:32px;color:var(--coral);font-size:14px;text-decoration:underline}
+#cajaVoz.con-texto .voz-link{display:none}
+#btnVoz{width:100%;margin-top:8px;min-height:46px;border-radius:14px;border:1px solid var(--coral);background:transparent;color:var(--coral);font-weight:600;font-size:16px}
+.sep-o{display:flex;align-items:center;gap:10px;margin:16px 0 2px;color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+.sep-o::before,.sep-o::after{content:"";flex:1;height:1px;background:var(--line)}
+#cajaVoz[hidden]+.sep-o{display:none}
+.f-sec{border-top:1px solid var(--line);padding:4px 0 16px}
+.f-sec:first-of-type{border-top:0}
+.f-dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-dos>div{min-width:0}.f-dos input{width:100%;min-width:0}
+.f-sec .rapidas{margin-bottom:8px}
+.horas-rap{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none}
+.horas-rap button{flex:1 0 auto;min-height:40px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:15px}
+.horas-rap button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.f-dinero{display:flex;align-items:center;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding-left:14px}
+.f-dinero span{font-size:22px;color:var(--muted)}
+.f-dinero input{border:0!important;background:transparent!important;font-size:24px;font-weight:600;margin:0}
+.f-dinero input:focus{outline:none!important;box-shadow:none!important}
+.f-dinero:focus-within{border-color:var(--coral);box-shadow:0 0 0 3px color-mix(in srgb,var(--coral) 20%,transparent)}
+#modal{padding-bottom:0!important}
+#modal #form{margin-bottom:5vh}
+@media (max-width:520px){#modal #form{margin-bottom:3vh}}
+.f-pie{position:sticky;bottom:0;z-index:3;margin:0 -18px;padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);border-radius:0 0 24px 24px}
+.f-pie #btnGuardar{flex:2;background:linear-gradient(90deg,var(--coral),var(--coral2));color:#fff;border:0;font-weight:700}
+#btnBorrar{margin:10px 0 18px;background:transparent;border:0;color:var(--coral2);text-decoration:underline;font-size:15px;min-height:44px}
+@media (max-width:520px){.f-pie{margin:0 -14px;padding-left:14px;padding-right:14px;border-radius:0 0 20px 20px}}
 </style>
 </head>
 <body>
@@ -655,47 +697,61 @@ header h1{font-size:20px;line-height:1.15}
     <button type="button" id="modalX" class="pop-x" aria-label="Cerrar">✕</button>
     <h3 id="tituloForm">Nueva cita</h3>
     <div id="cajaVoz" class="voz">
-      <label for="f_voz">Dictar la cita</label>
-      <button type="button" id="btnMic">🎤 Toque y hable</button>
-      <p class="ayuda" id="micAyuda"></p>
-      <textarea id="f_voz" rows="3" placeholder="Aquí aparece lo que dijo"></textarea>
-      <button type="button" id="btnVoz">Llenar con lo dictado</button>
-      <p class="ayuda">O escriba cada dato abajo.</p>
+      <div class="voz-fila">
+        <button type="button" id="btnMic" aria-label="Dictar la cita">🎤 Toque y hable</button>
+        <div><b class="voz-tit">Dictar la cita</b><p class="ayuda" id="micAyuda"></p><button type="button" id="vozEscribir" class="voz-link">⌨️ Prefiero escribirla en una frase</button></div>
+      </div>
+      <textarea id="f_voz" rows="2" placeholder="Aquí aparece lo que dijo"></textarea>
+      <button type="button" id="btnVoz">Llenar los datos con este texto</button>
     </div>
-    <label for="f_optica">Óptica (opcional)</label>
-    <input id="f_optica" list="opticasLista" placeholder="Escriba el nombre de la óptica" autocomplete="off">
-    <datalist id="opticasLista"></datalist>
-    <p class="ayuda" id="opticaEstado"></p>
-    <label for="f_fecha">Fecha</label>
-    <div class="rapidas"><button type="button" data-d="0">Hoy</button><button type="button" data-d="1">Mañana</button><button type="button" data-d="2">Pasado mañana</button></div>
-    <input type="date" id="f_fecha">
-    <label for="f_hora">Hora (si quiere)</label>
-    <input type="time" id="f_hora">
-    <label for="f_cliente">Nombre del cliente</label>
-    <input id="f_cliente">
-    <label for="f_ciudad">Ciudad</label>
-    <input id="f_ciudad" list="ciudades">
-    <datalist id="ciudades"></datalist>
-    <label>¿A qué va?</label>
-    <div class="tipos">
-      <button type="button" id="t_venta" data-t="venta" aria-pressed="false">Venta</button>
-      <button type="button" id="t_cobro" data-t="cobro" aria-pressed="false">Cobro</button>
+    <p class="sep-o"><span>o escriba los datos</span></p>
+
+    <div class="f-sec">
+      <label>¿A qué va?</label>
+      <div class="tipos">
+        <button type="button" id="t_venta" data-t="venta" aria-pressed="false">🛍️ Venta</button>
+        <button type="button" id="t_cobro" data-t="cobro" aria-pressed="false">💵 Cobro</button>
+      </div>
     </div>
-    <div id="campoVenta" hidden>
-      <label for="f_merc">Tipo de mercadería</label>
-      <input id="f_merc" list="mercs">
-      <datalist id="mercs"></datalist>
+
+    <div class="f-sec">
+      <label for="f_optica">Óptica <small>(opcional)</small></label>
+      <input id="f_optica" list="opticasLista" placeholder="Escriba el nombre de la óptica" autocomplete="off">
+      <datalist id="opticasLista"></datalist>
+      <p class="ayuda" id="opticaEstado"></p>
+      <div class="f-dos">
+        <div><label for="f_cliente">Cliente</label><input id="f_cliente" placeholder="Nombre"></div>
+        <div><label for="f_ciudad">Ciudad</label><input id="f_ciudad" list="ciudades" placeholder="Ciudad"><datalist id="ciudades"></datalist></div>
+      </div>
     </div>
-    <div id="campoCobro" hidden>
-      <label for="f_monto">¿Cuánto debe cobrar? (dólares)</label>
-      <input type="number" id="f_monto" inputmode="decimal" step="0.01" min="0">
+
+    <div class="f-sec">
+      <label for="f_fecha">¿Cuándo?</label>
+      <div class="rapidas"><button type="button" data-d="0">Hoy</button><button type="button" data-d="1">Mañana</button><button type="button" data-d="2">Pasado mañana</button></div>
+      <div class="f-dos">
+        <div><input type="date" id="f_fecha" aria-label="Fecha"></div>
+        <div><input type="time" id="f_hora" aria-label="Hora (si quiere)"></div>
+      </div>
+      <div class="horas-rap" aria-label="Horas rápidas"><button type="button" data-h="09:00">9:00</button><button type="button" data-h="10:00">10:00</button><button type="button" data-h="11:00">11:00</button><button type="button" data-h="15:00">15:00</button><button type="button" data-h="">Sin hora</button></div>
     </div>
-    <label for="f_nota">Nota (si quiere)</label>
-    <textarea id="f_nota" rows="2"></textarea>
+
+    <div class="f-sec" id="secDetalle">
+      <div id="campoVenta" hidden>
+        <label for="f_merc">Mercadería que lleva</label>
+        <input id="f_merc" list="mercs" placeholder="Ej.: económica intermedia">
+        <datalist id="mercs"></datalist>
+      </div>
+      <div id="campoCobro" hidden>
+        <label for="f_monto">¿Cuánto debe cobrar?</label>
+        <div class="f-dinero"><span>$</span><input type="number" id="f_monto" inputmode="decimal" step="0.01" min="0" placeholder="0.00"></div>
+      </div>
+      <label for="f_nota">Nota <small>(opcional)</small></label>
+      <textarea id="f_nota" rows="2" placeholder="Algo que deba recordar"></textarea>
+    </div>
     <div class="err" id="err"></div>
-    <div class="botones">
+    <div class="botones f-pie">
       <button type="button" id="btnCancelar">Cancelar</button>
-      <button type="submit" id="btnGuardar">Guardar</button>
+      <button type="submit" id="btnGuardar">Guardar cita</button>
     </div>
     <button type="button" id="btnBorrar" hidden>🗑 Borrar esta cita</button>
   </form>
@@ -1982,7 +2038,7 @@ function abrir(c) {
   $('#f_nota').value = c ? (c.nota || '') : '';
   ponerOpticaEnCita(c ? opticaDe(c) : null, false);
   $('#err').textContent = '';
-  $('#f_voz').value = '';
+  $('#f_voz').value = ''; setTimeout(() => { pintarVoz(); marcarHora(); }, 0);
   $('#cajaVoz').hidden = !!c;
   $('#btnBorrar').hidden = !c; $('#btnBorrar').classList.remove('seguro'); $('#btnBorrar').textContent = '🗑 Borrar esta cita';
   marcarRapida();
@@ -2295,11 +2351,11 @@ const Reco = window.SpeechRecognition || window.webkitSpeechRecognition;
 let reco = null, escuchando = false, textoFinal = '', reintentos = 0, inicioDictado = 0, timerPausa = null;
 function pintarMic() {
   const b = $('#btnMic');
-  b.textContent = escuchando ? '⏹ Listo, terminé' : '🎤 Toque y hable';
+  b.innerHTML = escuchando ? '<span class="mic-i">⏹</span><span class="mic-t">Listo</span>' : '<span class="mic-i">🎤</span><span class="mic-t">Hablar</span>';
   b.classList.toggle('on', escuchando);
   $('#micAyuda').textContent = escuchando
-    ? 'Escuchando… Puede hablar despacio y hacer pausas. Toque «Listo, terminé» al acabar.'
-    : 'Puede hablar despacio y con pausas. Ejemplo: «el martes a las tres, cobrar 50 dólares a María Pérez en Ambato».';
+    ? 'Escuchando… hable despacio, con pausas. Toque «Listo» al acabar.'
+    : 'Ej.: «el martes a las tres, cobrar 50 dólares a María Pérez en Ambato».';
 }
 function juntar(base, parte) {
   parte = parte.trim();
@@ -2317,7 +2373,7 @@ function empezarReco() {
       if (r.isFinal) textoFinal = juntar(textoFinal, r[0].transcript);
       else provisional += r[0].transcript;
     }
-    $('#f_voz').value = juntar(textoFinal, provisional);
+    $('#f_voz').value = juntar(textoFinal, provisional); pintarVoz();
     reintentos = 0;
   };
   reco.onerror = ev => {
@@ -2373,7 +2429,14 @@ function marcarRapida() {
   const v = $('#f_fecha').value;
   document.querySelectorAll('.rapidas button').forEach(b => b.setAttribute('aria-pressed', String(sumarDias(hoyISO(), Number(b.dataset.d)) === v)));
 }
-document.querySelectorAll('.rapidas button').forEach(b => b.addEventListener('click', () => { $('#f_fecha').value = sumarDias(hoyISO(), Number(b.dataset.d)); marcarRapida(); }));
+document.querySelectorAll('#form .rapidas button').forEach(b => b.addEventListener('click', () => { $('#f_fecha').value = sumarDias(hoyISO(), Number(b.dataset.d)); marcarRapida(); }));
+function marcarHora() { const v = $('#f_hora').value; document.querySelectorAll('.horas-rap button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.h === v))); }
+document.querySelectorAll('.horas-rap button').forEach(b => b.addEventListener('click', () => { $('#f_hora').value = b.dataset.h; marcarHora(); }));
+$('#f_hora').addEventListener('input', marcarHora);
+function pintarVoz() { const hay = !!$('#f_voz').value.trim(); $('#cajaVoz').classList.toggle('con-texto', hay || !Reco); }
+$('#f_voz').addEventListener('input', pintarVoz);
+$('#vozEscribir').addEventListener('click', () => { $('#cajaVoz').classList.add('con-texto'); $('#f_voz').focus(); });
+if (Reco) pintarMic(); pintarVoz();
 $('#f_fecha').addEventListener('input', marcarRapida);
 $('#btnBorrar').addEventListener('click', async () => {
   const b = $('#btnBorrar'), c = citas.find(x => x.id === editId); if (!c) return;
