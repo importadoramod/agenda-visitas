@@ -547,6 +547,77 @@ h2{letter-spacing:.1em}
 .det-op{margin-top:14px}
 .det-op .op-cab .cn{font-size:21px}
 .det-op .aj-sec{width:100%;text-align:left;padding:0 14px}
+
+/* ===== Rediseño: barra inferior, próxima visita, tarjetas con hora, resumen, confirmación ===== */
+/* Barra de pestañas abajo */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:7;margin:0;max-width:none;display:grid;grid-template-columns:1fr 1fr 74px 1fr 1fr;gap:0;
+  padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+  border-radius:0;border:0;border-top:1px solid var(--line);background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+nav button{min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;border:0;border-radius:14px;background:transparent!important;color:var(--muted);box-shadow:none!important;padding:0}
+nav button svg{width:25px;height:25px}
+nav button[aria-pressed="true"]{color:var(--coral)}
+nav button[aria-pressed="true"] svg{filter:drop-shadow(0 2px 6px color-mix(in srgb,var(--coral) 45%,transparent))}
+@media (min-width:760px){nav{left:50%;right:auto;transform:translateX(-50%);width:600px;bottom:14px;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 34px rgb(0 0 0 / .18)}}
+#nueva{left:50%!important;right:auto!important;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;z-index:8}
+@media (min-width:760px){#nueva{bottom:30px!important}}
+#nueva span{width:62px!important;height:62px!important;border:4px solid var(--bg)}
+body{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+/* Botones de arriba junto al título */
+header .top{flex-wrap:nowrap;align-items:center}
+.top-btns{flex-basis:auto;margin-top:0;gap:6px}
+#btnRecargar,#btnAjustesTop,#btnTema{min-width:42px!important;width:42px;min-height:42px!important;border-radius:12px}
+#btnRecargar svg,#btnAjustesTop svg,#btnTema svg{width:21px!important;height:21px!important}
+header .logo{width:46px;height:46px}
+header h1{font-size:20px;line-height:1.15}
+#hoyTxt{font-size:14px}.calActual{font-size:13px}
+@media (max-width:380px){header .logo{display:none}}
+/* Tarjetas de cita: hora a la izquierda, brillo solo en la próxima y atrasadas */
+.card.cita{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.card.cita.hero{border:1.5px solid color-mix(in srgb,var(--coral) 70%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--coral) 12%,transparent),0 16px 36px -14px color-mix(in srgb,var(--coral) 55%,transparent);
+  background:linear-gradient(170deg,color-mix(in srgb,var(--coral) 9%,var(--surface)),var(--surface) 55%)}
+.card.cita.atrasada{border-color:color-mix(in srgb,var(--coral2) 55%,transparent)}
+.card.cita.atrasada .hora-col b{color:var(--coral2)}
+.hora-col{flex:none;width:66px;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px solid var(--line);padding-right:12px;margin-right:2px}
+.hora-col b{font-family:var(--f-display);font-size:24px;line-height:1;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hora-col small{font-size:12px;color:var(--muted);margin-top:4px}
+.hora-col em{font-style:normal;font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap}
+.card.cita.hero .hora-col{border-right-color:color-mix(in srgb,var(--coral) 45%,transparent)}
+.card.cita.hero .hora-col b{color:var(--coral);font-size:28px}
+.cita-sub{color:var(--muted);font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cita-info{flex:1}
+.card.cita.hero .cita-info .cn{font-size:24px}
+.hero-et{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--coral);margin:-2px 0 12px}
+.pulso{width:9px;height:9px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 0 var(--coral);animation:pulso 1.8s infinite}
+@keyframes pulso{70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.pulso{animation:none}}
+.hero-caja{margin-top:16px}
+.card.cita .cd{margin-top:10px;font-size:17px}
+/* Resumen: cifras grandes y avance */
+.rg{display:flex;flex-direction:column;gap:12px;margin:14px 0}
+.rg-dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rg-big{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+.rg-big small{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.rg-big b{display:block;font-family:var(--f-display);font-size:30px;line-height:1.15;margin-top:4px;letter-spacing:-.02em;white-space:nowrap}
+.rg-big b.vta{color:var(--coral)}
+.rg-avance{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px;box-shadow:var(--shadow)}
+.rg-lin{display:flex;justify-content:space-between;font-size:16px;margin-bottom:10px}
+.barra-av{height:12px;border-radius:99px;background:var(--soft);overflow:hidden}
+.barra-av i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#1f9d55,#36c275);transition:width .5s}
+.rg-falta{margin:0;font-size:16px;color:var(--muted)}.rg-falta b{color:var(--coral2)}
+.detalle-cifras{margin:4px 0 8px}
+.detalle-cifras summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--muted);font-size:16px}
+/* Confirmación al registrar */
+#listoPop{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s}
+#listoPop.ver{opacity:1}
+#listoPop .lp-in{display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 30px;border-radius:26px;background:color-mix(in srgb,var(--surface) 94%,transparent);border:1px solid var(--line);
+  box-shadow:0 24px 60px rgb(0 0 0 / .3);color:#1f9d55;transform:scale(.85);transition:transform .28s cubic-bezier(.2,1.4,.4,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#listoPop.ver .lp-in{transform:scale(1)}
+#listoPop svg{width:76px;height:76px}
+#listoPop svg path{stroke-dasharray:40;stroke-dashoffset:40}
+#listoPop.ver svg path{animation:trazo .45s .12s ease-out forwards}
+@keyframes trazo{to{stroke-dashoffset:0}}
+#listoPop b{color:var(--ink);font-size:21px;font-family:var(--f-display)}
+#listoPop small{color:var(--muted);font-size:15px}
 </style>
 </head>
 <body>
@@ -563,10 +634,11 @@ h2{letter-spacing:.1em}
     <button id="btnAjustesTop" class="btnTop" data-ajustes="1" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7 7 0 0 0-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 13.92 2h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.72 8.47a.48.48 0 0 0 .12.61l2.03 1.58a7.3 7.3 0 0 0 0 1.88l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.25.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg></button></div>
   </div>
   <nav>
-    <button id="v_hoy" data-v="hoy" aria-pressed="true">Hoy</button>
-    <button id="v_mes" data-v="mes" aria-pressed="false">Calendario</button>
-    <button id="v_op" data-v="opticas" aria-pressed="false">Ópticas</button>
-    <button id="v_res" data-v="resumen" aria-pressed="false">Resumen</button>
+    <button id="v_hoy" data-v="hoy" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Hoy</span></button>
+    <button id="v_mes" data-v="mes" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendario</span></button>
+    <i class="nav-hueco" aria-hidden="true"></i>
+    <button id="v_op" data-v="opticas" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9v11h16V9"/><path d="M4 9c0 1.7 1.3 3 3 3s2.7-1.3 2.7-3c0 1.7 1.3 3 2.3 3s2.3-1.3 2.3-3c0 1.7 1.3 3 2.7 3s3-1.3 3-3"/></svg><span>Ópticas</span></button>
+    <button id="v_res" data-v="resumen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Resumen</span></button>
   </nav>
 </header>
 
@@ -1197,20 +1269,39 @@ function contactoCita(c, o) {
   if (telDigitos(tel).length >= 7) return `<a class="btnlink contacto" href="tel:${telDigitos(tel)}">${ICO.tel} Llamar</a><a class="btnlink contacto wa" href="${esc(urlWhats(tel))}" target="_blank" rel="noopener">${ICO.wa} WhatsApp</a>`;
   return o ? `<button type="button" class="sin-tel" data-op-tel="${o.id}">${ICO.tel} Agregar teléfono</button>` : '';
 }
-function card(c) {
+function minutosHasta(c) {
+  if (c.fecha !== hoyISO() || !c.hora) return null;
+  const [hh, mm] = c.hora.split(':').map(Number), n = new Date();
+  return hh * 60 + mm - (n.getHours() * 60 + n.getMinutes());
+}
+function cuandoTxt(c) {
+  const m = minutosHasta(c);
+  if (c.fecha < hoyISO()) return 'Atrasada · ' + fechaCorta(c.fecha);
+  if (c.fecha > hoyISO()) return fechaLarga(c.fecha);
+  if (m === null) return 'Hoy';
+  if (m < -15) return 'Hoy · ya pasó la hora';
+  if (m <= 0) return 'Ahora';
+  if (m < 60) return `En ${m} min`;
+  return `En ${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) + ' min' : ''}`;
+}
+let proximaId = null;
+function card(c, extra) {
   const det = c.tipo === 'venta'
     ? `<div class="cd">Llevar: <span class="merc">${esc(c.mercaderia)}</span></div>`
     : `<div class="cd">Cobrar: <span class="monto">${money(c.monto)}</span></div>`;
   const seguro = porBorrar === c.id;
   const o = opticaDe(c);
-  return `<article class="card cita ${c.estado === 'hecho' ? 'hecho' : ''}">
-    <div class="cita-cab">${miniaturaMapa(o)}
+  const hero = extra === 'hero', atrasada = pend(c) && c.fecha < hoyISO();
+  const ht = c.hora ? horaTxt(c.hora).split(' ') : null;
+  const col = `<div class="hora-col">${ht ? `<b>${ht[0]}</b><small>${ht.slice(1).join(' ')}</small>` : '<b>—</b><small>sin hora</small>'}${c.fecha !== hoyISO() ? `<em>${fechaCorta(c.fecha)}</em>` : ''}</div>`;
+  return `<article class="card cita ${c.estado === 'hecho' ? 'hecho' : ''} ${hero ? 'hero' : ''} ${atrasada ? 'atrasada' : ''}">
+    ${hero ? `<div class="hero-et"><span class="pulso"></span>Próxima visita · ${cuandoTxt(c)}</div>` : ''}
+    <div class="cita-cab">${col}
       <div class="cita-info">
-        <div class="cn">${esc(c.cliente)}</div>
-        <div class="cita-hora">${ICO.reloj}<span>${c.hora ? horaTxt(c.hora) : 'Sin hora'}${c.fecha !== hoyISO() ? ' · ' + fechaCorta(c.fecha) : ''}</span></div>
+        <div class="cn">${esc(o ? o.nombre : c.cliente)}</div>
+        <div class="cita-sub">${esc([o && o.nombre !== c.cliente ? c.cliente : '', c.ciudad].filter(Boolean).join(' · '))}</div>
         <div class="cita-pills"><span class="tag ${c.tipo}">${c.tipo === 'venta' ? 'Venta' : 'Cobro'}</span>${pildoraDeuda(o)}</div>
       </div></div>
-    <div class="cd">${esc(c.ciudad)}</div>
     ${det}
     ${c.nota ? `<div class="cno">Nota: ${esc(c.nota)}</div>` : ''}
     <div class="acc">
@@ -1247,14 +1338,22 @@ function render() {
     html += `<p class="saludo">${hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches'} 👋</p>
       <p class="frase">${np === 0 ? 'Hoy no tiene visitas pendientes.' : `Hoy tiene <b style="color:var(--ink)">${np} ${np === 1 ? 'visita' : 'visitas'}</b> por hacer.`}
       ${cobrar > 0 ? ` Debe cobrar <b>${money(cobrar)}</b>.` : ''}</p>`;
-    html += semanaHTML() + miniCalHTML() + resumenMesHTML();
+    html += semanaHTML();
+    // La próxima visita va arriba, grande: la de hoy que sigue; si no hay, la siguiente de otro día
+    const sigHoy = hoy.filter(pend).find(c => { const m = minutosHasta(c); return m === null || m > -15; }) || hoy.filter(pend)[0];
+    const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden);
+    const heroC = sigHoy || prox[0] || null; proximaId = heroC ? heroC.id : null;
+    if (heroC) html += '<div class="lista hero-caja">' + card(heroC, 'hero') + '</div>';
     const ruta = urlRutaHoy();
     if (ruta) html += `<a class="ruta" href="${esc(ruta)}" target="_blank" rel="noopener">${ICO.pin} Ver la ruta de hoy en Google Maps</a>`;
-    if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2><div class="lista">' + atr.map(card).join('') + '</div>';
-    html += '<h2>Visitas de hoy</h2>' + (hoy.length ? '<div class="lista">' + hoy.map(card).join('') + '</div>'
-      : '<p class="vacio">No hay visitas para hoy. Toque el botón <b>＋</b> de abajo a la derecha para anotar una.</p>');
-    const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden).slice(0, 3);
-    if (prox.length) html += '<h2>Próximas visitas</h2><div class="lista">' + prox.map(card).join('') + '</div>';
+    const sin = l => l.filter(c => c.id !== proximaId);
+    if (atr.length) html += '<h2 class="atr">Quedaron pendientes de otros días</h2><div class="lista">' + atr.map(c => card(c)).join('') + '</div>';
+    const resto = sin(hoy);
+    html += '<h2>Visitas de hoy</h2>' + (resto.length ? '<div class="lista">' + resto.map(c => card(c)).join('') + '</div>'
+      : `<p class="vacio">${hoy.length ? 'No hay más visitas para hoy.' : 'No hay visitas para hoy. Toque el botón <b>＋</b> de abajo para anotar una.'}</p>`);
+    const prox3 = sin(prox).slice(0, 3);
+    if (prox3.length) html += '<h2>Próximas visitas</h2><div class="lista">' + prox3.map(c => card(c)).join('') + '</div>';
+    html += resumenMesHTML();
   } else if (vista === 'proximas') {
     const prox = citas.filter(c => pend(c) && c.fecha > h).sort(orden);
     html = prox.length ? porDia(prox) : '<p class="vacio">No hay visitas anotadas para los próximos días.</p>';
@@ -1301,6 +1400,18 @@ function rangoPeriodo() {
   const y = hoy.getFullYear() + despl;
   return { desde: y + '-01-01', hasta: y + '-12-31', texto: 'Año ' + y, anio: y };
 }
+function resumenGrande(r, lista, hechas, cobrado, porCobrar) {
+  const enR = a => a.fecha >= r.desde && a.fecha <= r.hasta;
+  const ventas = tablas.abonos.filter(a => esVenta(a) && enR(a)).reduce((s, a) => s + Math.abs(Number(a.monto || 0)), 0);
+  const cobros = tablas.abonos.filter(a => a.tipo === 'abono' && enR(a)).reduce((s, a) => s + Math.abs(Number(a.monto || 0)), 0) || cobrado;
+  const pct = lista.length ? Math.round(hechas.length / lista.length * 100) : 0;
+  return `<div class="rg">
+    <div class="rg-dos"><div class="rg-big"><small>Ventas</small><b class="vta">${money(ventas)}</b></div><div class="rg-big"><small>Cobrado</small><b>${money(cobros)}</b></div></div>
+    <div class="rg-avance"><div class="rg-lin"><span>Visitas hechas</span><b>${hechas.length} de ${lista.length}</b></div>
+      <div class="barra-av" role="img" aria-label="${pct} por ciento de visitas hechas"><i style="width:${pct}%"></i></div></div>
+    ${porCobrar > 0 ? `<p class="rg-falta">Falta cobrar en citas: <b>${money(porCobrar)}</b></p>` : ''}
+  </div>`;
+}
 function resumenHTML() {
   const r = rangoPeriodo();
   const lista = citas.filter(c => c.fecha >= r.desde && c.fecha <= r.hasta);
@@ -1312,6 +1423,8 @@ function resumenHTML() {
   let h = `<div class="periodos">${btn('dia', 'Día')}${btn('semana', 'Semana')}${btn('mes', 'Mes')}${btn('anio', 'Año')}</div>
     <div class="navper"><button data-nav="-1" aria-label="Anterior">‹</button><p class="rango">${r.texto}</p><button data-nav="1" aria-label="Siguiente">›</button></div>
     ${despl ? '<div class="navper"><button class="ir" data-nav="0" style="flex:1">Volver a hoy</button></div>' : ''}
+    ${resumenGrande(r, lista, hechas, cobrado, porCobrar)}
+    <details class="detalle-cifras"><summary>Ver todos los números</summary>
     <div class="cifras">
       <div class="dato"><small>Citas</small><b>${lista.length}</b></div>
       <div class="dato"><small>Ya visitadas</small><b>${hechas.length}</b></div>
@@ -1322,7 +1435,7 @@ function resumenHTML() {
       <div class="dato ancho"><small>Pendientes por visitar</small><b>${pendientes.length}</b></div>
       <div class="dato"><small>Cobros registrados</small><b>${money(-tablas.abonos.filter(a => a.tipo === 'abono' && a.fecha >= r.desde && a.fecha <= r.hasta).reduce((s, a) => s + Number(a.monto || 0), 0))}</b></div>
       <div class="dato"><small>Por cobrar (ópticas)</small><b class="cobro">${money(totalPorCobrar())}</b></div>
-    </div>`;
+    </div></details>`;
   if (periodo === 'semana') {
     const d0 = new Date(r.desde + 'T00:00:00'); const filas = [];
     for (let i = 0; i < 7; i++) { const d = new Date(d0); d.setDate(d0.getDate() + i);
@@ -1819,7 +1932,7 @@ async function terminarCobro(cobrado) {
   const { c, o } = cobroCita; cobroCita = null; $('#cobroSheet').hidden = true;
   if (cobrado > 0) registrarMov(o.id, -cobrado, 'abono', 'Visita del ' + fechaCorta(c.fecha), c.id);
   await guardarCita({ ...c, estado: 'hecho', opticaId: c.opticaId || o.id });
-  toast(cobrado > 0 ? `Cobro de ${money(cobrado)} registrado` : 'Marcada como visitada');
+  celebrar(cobrado > 0 ? `Cobro de ${money(cobrado)}` : 'Visita registrada');
   if (fichaId) verFicha(fichaId);
 }
 $('#cobroOk').addEventListener('click', () => { const v = Number($('#cobro_monto').value); if (!(v > 0)) { toast('Escriba el valor cobrado, o toque «No cobré».'); return; } terminarCobro(v); });
@@ -1839,7 +1952,7 @@ async function terminarVenta(valor) {
   const { c, o } = ventaCita; ventaCita = null; $('#ventaSheet').hidden = true;
   if (valor > 0) registrarMov(o ? o.id : '', valor, ventaPago, 'Visita del ' + fechaCorta(c.fecha), c.id);
   await guardarCita({ ...c, estado: 'hecho', opticaId: c.opticaId || (o ? o.id : '') });
-  toast(valor > 0 ? `Venta de ${money(valor)} registrada${ventaPago === 'venta' ? ' (a crédito)' : ''}` : 'Marcada como visitada');
+  celebrar(valor > 0 ? `Venta de ${money(valor)}` : 'Visita registrada', valor > 0 && ventaPago === 'venta' ? 'A crédito' : '');
   if (fichaId) verFicha(fichaId);
 }
 $('#venta_pago').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b) return; ventaPago = b.dataset.p; document.querySelectorAll('#venta_pago button').forEach(x => x.setAttribute('aria-pressed', x === b)); });
@@ -2314,7 +2427,7 @@ async function alTocar(e) {
     if (c.estado !== 'hecho' && c.tipo === 'cobro' && o) { pedirCobro(c, o); return; }
     if (c.estado !== 'hecho' && c.tipo === 'venta') { pedirVenta(c, o); return; }
     if (c.estado === 'hecho') tablas.abonos.filter(a => a.citaId === c.id).forEach(a => borrarTabla('abonos', a.id, true));
-    try { await guardarCita({ ...c, estado: c.estado === 'hecho' ? 'pendiente' : 'hecho' }); toast(c.estado === 'hecho' ? 'Volvió a pendiente' : 'Marcada como visitada'); }
+    try { await guardarCita({ ...c, estado: c.estado === 'hecho' ? 'pendiente' : 'hecho' }); c.estado === 'hecho' ? toast('Volvió a pendiente') : celebrar('Visita registrada'); }
     catch (err) { toast('No se pudo guardar. Revise el internet.'); }
     return;
   }
@@ -2368,6 +2481,29 @@ $('.b-lupa').innerHTML = ICO.lupa; $('#buscarMic').innerHTML = ICO.mic;
 /* ---------- bienvenida con logo y tono ---------- */
 function sonidoBienvenida() { try { return localStorage.getItem('agenda_sonido_bienvenida') !== '0'; } catch (e) { return true; } }
 let audioBienvenida = null;
+// Confirmación grande: ✓ animado, vibración corta y dos notas suaves de marimba
+let ctxAudio = null;
+function notaMarimba(f, t0, dur) {
+  const o = ctxAudio.createOscillator(), g = ctxAudio.createGain(), o2 = ctxAudio.createOscillator(), g2 = ctxAudio.createGain();
+  o.type = 'sine'; o.frequency.value = f; o2.type = 'sine'; o2.frequency.value = f * 4;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.32, t0 + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  g2.gain.setValueAtTime(0.0001, t0); g2.gain.exponentialRampToValueAtTime(0.06, t0 + 0.004); g2.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+  o.connect(g).connect(ctxAudio.destination); o2.connect(g2).connect(ctxAudio.destination);
+  o.start(t0); o2.start(t0); o.stop(t0 + dur + 0.05); o2.stop(t0 + 0.2);
+}
+function tonoListo() {
+  try { ctxAudio = ctxAudio || new (window.AudioContext || window.webkitAudioContext)(); if (ctxAudio.state === 'suspended') ctxAudio.resume();
+    const t = ctxAudio.currentTime + 0.02; notaMarimba(659.25, t, 0.5); notaMarimba(987.77, t + 0.13, 0.7); } catch (e) {}
+}
+function celebrar(txt, sub) {
+  try { navigator.vibrate && navigator.vibrate([35, 40, 35]); } catch (e) {}
+  if (sonidoBienvenida()) tonoListo();
+  let el = $('#listoPop');
+  if (!el) { el = document.createElement('div'); el.id = 'listoPop'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+  el.innerHTML = `<div class="lp-in"><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 27l7.5 7.5L38 19" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><b>${esc(txt)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
+  el.classList.remove('ver'); void el.offsetWidth; el.classList.add('ver');
+  clearTimeout(celebrar.t); celebrar.t = setTimeout(() => el.classList.remove('ver'), 1800);
+}
 function tonoBienvenida() {
   try { audioBienvenida = audioBienvenida || new Audio('bienvenida.mp3'); audioBienvenida.volume = 0.85; audioBienvenida.currentTime = 0; return audioBienvenida.play(); }
   catch (e) { return Promise.reject(e); }
